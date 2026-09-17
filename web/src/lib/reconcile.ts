@@ -151,7 +151,18 @@ export function reconcile({
   }
 
   // Several notes on one order: parts of one delivery, or the same scan twice?
-  if (live.length > 1 && listed === order.quantity) {
+  //
+  // Only worth a decision once everything is counted in AND something is being
+  // claimed against it. Before the invoice a split delivery is just a delivery;
+  // it becomes a question when someone has to decide what the invoice is paying
+  // for. Raising it at the bay would put a proposal on every clean receipt.
+  if (
+    live.length > 1 &&
+    listed === order.quantity &&
+    receipts.length > 0 &&
+    awaitingReceipt.length === 0 &&
+    invoice
+  ) {
     discrepancies.push({
       key: `split_delivery:${order.id}`,
       statement: `${live.length} delivery notes reference ${order.id}, totalling exactly the ${order.quantity} ordered.`,

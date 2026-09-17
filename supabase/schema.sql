@@ -37,6 +37,9 @@ create table receipts (
   accepted        integer not null check (accepted  >= 0),
   -- the three quantities must reconcile; never collapse into one net number
   constraint receipts_quantities_balance check (accepted = received - damaged),
+  -- one receipt per note: a second physical delivery brings its own note, so a
+  -- second receipt against the same one is a double submit
+  constraint receipts_one_per_note unique (delivery_note),
   created_at      timestamptz not null default now()
 );
 

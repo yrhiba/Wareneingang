@@ -61,11 +61,11 @@ export default function DocsPage() {
           </li>
           <li>
             <strong>Press “Supplier invoice arrives”</strong> (purple — a
-            simulation). The invoice bills 10. The difference appears, a proposal is
-            raised, and you are taken to review. One click, no second prompt.
+            simulation). The invoice bills 10. Two proposals are raised and you are
+            taken to review. One click, no second prompt.
           </li>
           <li>
-            <strong>Read the proposal aloud.</strong> Leading cause{" "}
+            <strong>Read the first proposal aloud.</strong> Leading cause{" "}
             <em>Damage</em>, marked <em>likely</em>, with Shortage, Duplicate scan
             and Second delivery still listed as open. Evidence:{" "}
             <Mono>INV-1 · DN-1 · DN-2 · RC-1</Mono>. Proposed action: request a
@@ -77,7 +77,9 @@ export default function DocsPage() {
             different cause and type a reason. Either way the decision, the reviewer
             and the final cause are recorded, and the history shows which. Then
             press “Supplier issues a credit note” to watch the gap close to
-            reconciled.
+            reconciled. The second proposal is the duplicate-scan question — two
+            notes against one order — and it is there to show the system asks
+            rather than assumes.
           </li>
         </ol>
         <Callout label="If you only have 30 seconds">

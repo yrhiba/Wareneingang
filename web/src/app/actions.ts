@@ -33,20 +33,27 @@ export async function resetDemo(formData: FormData) {
   const mode = (formData.get("mode") as ResetMode) ?? "start_of_shift";
   const db = createServerClient();
 
-  // Order matters: children before parents.
-  for (const t of [
-    "review_decisions",
-    "proposals",
-    "credit_notes",
-    "invoice_lines",
-    "invoices",
-    "receipts",
-    "delivery_notes",
-    "orders",
-  ]) {
-    const { error } = await db.from(t).delete().neq("id", "__none__");
-    // review_decisions/proposals key on uuid; the neq guard above still matches all rows.
-    if (error) throw new Error(`${t}: ${error.message}`);
+  // Children before parents, or the foreign keys refuse the delete.
+  //
+  // PostgREST needs a filter on a DELETE, and it must be one every row matches.
+  // Comparing an id is not safe here: proposals and review_decisions key on
+  // uuid (so a text sentinel fails to cast) and invoice_lines has no id column
+  // at all. So each table names a NOT NULL column and we filter on "is not
+  // null", which is type-agnostic and always true.
+  const CLEAR_ORDER: [table: string, notNullColumn: string][] = [
+    ["review_decisions", "decided_at"],
+    ["proposals", "created_at"],
+    ["credit_notes", "created_at"],
+    ["invoice_lines", "invoice_id"],
+    ["invoices", "created_at"],
+    ["receipts", "created_at"],
+    ["delivery_notes", "created_at"],
+    ["orders", "created_at"],
+  ];
+
+  for (const [table, col] of CLEAR_ORDER) {
+    const { error } = await db.from(table).delete().not(col, "is", null);
+    if (error) throw new Error(`${table}: ${error.message}`);
   }
 
   await db.from("orders").insert(INITIAL.order).throwOnError();
@@ -82,16 +89,26 @@ export async function captureReceipt(formData: FormData) {
 
   const db = createServerClient();
 
-  // The three quantities are stored separately; accepted is derived so it can
-  // never drift from the other two. The DB enforces the same rule as a check
-  // constraint, so a bad write fails even if this code is wrong.
-  const accepted = received - damaged;
-  const id = await nextReceiptId(noteId);
-
-  const { error } = await db
+  // One receipt per delivery note. A second physical delivery arrives with its
+  // own note, so a second receipt against the same one is a double submit -
+  // and silently doubling the counted-in quantity mid-demo is the worst
+  // failure this screen has. Treat it as a no-op rather than an error.
+  const { data: existing } = await db
     .from("receipts")
-    .insert({ id, delivery_note: noteId, received, damaged, accepted });
-  if (error) throw new Error(error.message);
+    .select("id")
+    .eq("delivery_note", noteId)
+    .maybeSingle();
+
+  if (!existing) {
+    // The three quantities are stored separately; accepted is derived so it can
+    // never drift from the other two. The DB enforces the same rule as a check
+    // constraint, so a bad write fails even if this code is wrong.
+    const accepted = received - damaged;
+    const { error } = await db
+      .from("receipts")
+      .insert({ id: noteId.replace(/^DN-/, "RC-"), delivery_note: noteId, received, damaged, accepted });
+    if (error) throw new Error(error.message);
+  }
 
   await syncProposals();
   refresh();
@@ -99,18 +116,6 @@ export async function captureReceipt(formData: FormData) {
   // Last note at the bay? Move the user on to the evidence they just built.
   const { reconciliation } = await loadCase();
   if (reconciliation.awaitingReceipt.length === 0) redirect("/evidence");
-}
-
-/** RC-1 for DN-1, and so on, so a re-run reproduces the supplied record ids. */
-async function nextReceiptId(noteId: string) {
-  const db = createServerClient();
-  const base = noteId.replace(/^DN-/, "RC-");
-  const { data } = await db.from("receipts").select("id");
-  const taken = new Set((data ?? []).map((r: { id: string }) => r.id));
-  if (!taken.has(base)) return base;
-  let n = 2;
-  while (taken.has(`${base}.${n}`)) n++;
-  return `${base}.${n}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -232,20 +237,24 @@ export async function simulateEvent(formData: FormData) {
   } else if (kind === "credit_note") {
     // Changed information: the supplier accepts the damaged unit and credits it.
     // A new record, labelled simulated. INV-1 is never edited.
-    const { reconciliation, invoice } = await loadCase();
-    if (!invoice) throw new Error("No invoice to credit yet.");
-    const gap = reconciliation.invoicedNet - reconciliation.accepted;
-    if (gap <= 0) throw new Error("Nothing outstanding to credit.");
-    await db
-      .from("credit_notes")
-      .insert({
-        id: `CN-${Date.now().toString().slice(-4)}`,
-        invoice_id: invoice.id,
-        quantity: gap,
-        reason: `Supplier credit for ${gap} damaged unit(s) reported at receipt.`,
-        is_simulated: true,
-      })
-      .throwOnError();
+    const { reconciliation, invoice, creditNotes } = await loadCase();
+    const gap = invoice ? reconciliation.invoicedNet - reconciliation.accepted : 0;
+
+    // Nothing to credit, or already credited (a double-click). Fall through to
+    // the redirect rather than throwing: an error page mid-presentation is far
+    // worse than a button that quietly does nothing.
+    if (invoice && gap > 0 && creditNotes.length === 0) {
+      await db
+        .from("credit_notes")
+        .insert({
+          id: `CN-${Date.now().toString().slice(-4)}`,
+          invoice_id: invoice.id,
+          quantity: gap,
+          reason: `Supplier credit for ${gap} damaged unit(s) reported at receipt.`,
+          is_simulated: true,
+        })
+        .throwOnError();
+    }
   } else {
     throw new Error("Unknown event.");
   }
