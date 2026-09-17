@@ -1,0 +1,38 @@
+# ---------------------------------------------------------------------------
+# Credentials and secrets — never commit.
+# Supabase URL + publishable key are safe to expose; the secret key is not.
+# If a key does land in a commit, rotate it in the Supabase dashboard: removing
+# it from the tree does not remove it from git history.
+# ---------------------------------------------------------------------------
+# local scratch file holding the live keys (filename typo kept as-is)
+subabase-data.md
+supabase-data.md
+*.local.md
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# Build output and dependencies
+node_modules/
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+
+# Tooling caches and logs
+.turbo/
+.vercel/
+.eslintcache
+npm-debug.log*
+yarn-error.log*
+*.log
+
+# Editor and OS noise
+.DS_Store
+.idea/
+.vscode/
+*.swp

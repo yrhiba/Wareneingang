@@ -4,16 +4,46 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repository is
 
-Working folder for a one-day exercise (DaiL / Octopus day), case **C04 — "The delivery arrived. The invoice tells a different story."** There is no application code yet; only the two supplied materials:
+Working folder for a one-day exercise (DaiL / Octopus day), case **C04 — "The delivery arrived. The invoice tells a different story."**
 
-- `readme.md` — the candidate pack: client situation, working agreement, demo checklist and the Wolf handoff template (all four pages concatenated).
-- `initial.json` — the entire synthetic dataset. Everything a prototype reconciles comes from this file.
+Supplied materials (do not alter their substance):
+
+- `case-pack.md` — the candidate pack: client situation, working agreement, demo checklist and the Wolf handoff template. Renamed from `readme.md` and reformatted; wording unchanged.
+- `initial.json` — the entire synthetic dataset. Everything the prototype reconciles comes from this file.
+
+Our own writing:
+
+- `README.md` — the deliverable README: result first, run instructions, real vs simulated, limitations, next validation test.
+- `web/src/app/docs/page.tsx` — the presenter briefing, served at `/docs`. Static on purpose: it must still open if Supabase is unreachable. Every "Built / Partial / Not built" badge on it is a claim the demo has to be able to back — update it when the feature list changes.
 
 The deliverable is a working prototype (or clearly labeled clickable demonstration) that answers the starting question — *what should the employee record at receipt so the next person can resolve the difference?* — plus a short README (run instructions, real vs simulated, limitations, next validation test) and a filled Wolf handoff.
 
 ## Commands
 
-None yet: no package manager, build, test or lint configuration exists, and this is not a git repository. When a stack is chosen, record its commands here. The pack requires an **exact run instruction and a repeatable start state**, so prefer a single command that resets state from `initial.json` and starts the demo.
+Stack: Next.js 16 (App Router, TypeScript, Tailwind v4) in `web/`, Supabase Postgres as the store.
+
+```bash
+cd web && npm run dev      # demo at http://localhost:3000,
+                          # presenter briefing at /docs
+cd web && npm run build    # production build
+cd web && npx tsc --noEmit # typecheck
+```
+
+**Reset to the start state:** re-run `supabase/seed.sql` in the Supabase SQL editor. It truncates and reloads the records from `initial.json` verbatim.
+
+`web/.env.local` holds the three keys (URL, publishable, secret) and is gitignored; `web/.env.example` documents the shape.
+
+## Architecture
+
+Three screens, in the order the work happens: `/` goods receipt → `/evidence` the chain → `/review` the decision.
+
+- `supabase/schema.sql` — 8 tables. `receipts` carries a check constraint `accepted = received - damaged` so the three quantities cannot be collapsed at the DB level (verified: a bad write returns `23514`). `delivery_notes.duplicate_of` makes a merged scan an explicit, reviewable row. `credit_notes` lets a supplier correction arrive as its own record rather than as an edit to `INV-1`. Additive migrations live in `supabase/migrations/`.
+- `src/lib/reconcile.ts` — pure domain logic, no database. Ranks a leading cause with a confidence but never settles one: it emits `likely`, the open `candidates`, the `evidence` ids, a `proposedAction` and what would settle it. **Propose, don't decide.**
+- `src/lib/seed-data.ts` — the supplied records the app reseeds from. `npm run check:seed` asserts it still matches `initial.json` field for field; run it before touching anything near the data.
+- `src/app/actions.ts` — **every write in the app.** Nothing else can change state.
+- `src/lib/supabase/client.ts` (browser, publishable key) and `server.ts` (secret key, `server-only`).
+- RLS grants select only. The browser key is **verified unable to write** (`42501`), so every state change must go through a server action behind review.
+- Two simulated events (invoice arrives, credit note issued). Anything simulated is violet and tagged; keep it that way.
 
 ## The domain problem (why the numbers look inconsistent)
 
