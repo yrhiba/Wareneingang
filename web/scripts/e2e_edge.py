@@ -113,6 +113,23 @@ ar_ev = text(get_as("/evidence", "ar"))
 check("Arabic evidence keeps the three quantities apart",
       all(x in ar_ev for x in ["المستلَم 10", "المقبول 9", "1 تالف"]), ar_ev[:400])
 
+# The briefing used to be English-only. It follows the switch now, so the
+# claims the prototype makes about itself are readable in both languages -
+# while the identifiers inside them deliberately are not translated.
+ar_docs_raw, ar_docs = get_as("/docs", "ar"), text(get_as("/docs", "ar"))
+check("the briefing follows the switch too",
+      "قل هذا أولًا" in ar_docs and "Say this first" in text(get_as("/docs", "en")), ar_docs[:200])
+# <main> used to pin itself ltr; the only dir="ltr" left is on the code spans,
+# which must stay Latin-ordered inside a right-to-left sentence.
+check("and comes back right-to-left",
+      'dir="rtl"' in ar_docs_raw and "<main dir=" not in ar_docs_raw, ar_docs_raw[:200])
+check("no English prose left on it",
+      not any(x in ar_docs for x in ["Not built", "Presenter briefing", "Run it"]), ar_docs[:300])
+check("but ids, paths and commands stay Latin",
+      all(x in ar_docs for x in ["INV-1", "42501", "initial.json", "npm run check:seed"]), ar_docs[:300])
+check("the emphasis markers were rendered, not printed",
+      "*" not in ar_docs and "`" not in ar_docs, ar_docs[:300])
+
 b = uuid.uuid4().hex
 form = find_form(get("/review"), 'name="lang"')
 aid = re.search(r'name="(\$ACTION_ID_[^"]*)"', form).group(1)

@@ -49,8 +49,10 @@ npm run dev                    # http://localhost:3000
 **Language:** the header switches the whole prototype between **English** and
 **العربية**, right-to-left included. The choice is a cookie the server reads, so
 the correct language and text direction are in the first response — no flash, and
-the switch still works with JavaScript off. `/docs` stays English on purpose: it
-is the presenter's own notes, and it says so when you are reading in Arabic.
+the switch still works with JavaScript off. Everything follows it, including
+the `/docs` briefing — a reviewer reading the prototype in Arabic can read the
+claims it makes about itself in Arabic too. Record ids, file paths and shell
+commands stay Latin: they are identifiers, not prose.
 
 **Changing the numbers:** nothing in the app hardcodes *10 × FILTER-X*. Every
 quantity is a row the engine reads, so `/settings` can change the ordered,
@@ -93,7 +95,7 @@ load. The secret key must never take a `NEXT_PUBLIC_` prefix.
 | Records and persistence | **Real** | Live Supabase Postgres, eight tables. Rows are the supplied records, unaltered. |
 | Reconciliation and proposal | **Real** | Pure TypeScript in `web/src/lib/reconcile.ts`. No model call; deterministic. |
 | Evidence view | **Real** | Every claim carries the record ids behind it. |
-| English / Arabic | **Real** | Every screen, both directions. A proposal stores the facts behind its sentence, so one raised in English reads correctly in Arabic and back. Record ids, quantities and typed notes are never translated. |
+| English / Arabic | **Real** | Every screen, both directions, the presenter briefing included. A proposal stores the facts behind its sentence, so one raised in English reads correctly in Arabic and back. Record ids, quantities and typed notes are never translated. |
 | Human review | **Real** | Approve / correct / reject writes a `review_decisions` row; a correction overrides the proposed cause. |
 | "No write without review" | **Real, enforced** | RLS grants the browser key select only. A write from it fails with `42501` — verified, not assumed. |
 | Event trigger | **Simulated, labelled** | Two buttons inject the invoice and the credit note. Marked purple and tagged *Simulated* everywhere they appear. |

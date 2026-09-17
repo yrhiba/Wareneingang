@@ -27,8 +27,6 @@ export const en = {
     flow: "Receiving flow",
     briefing: "Briefing",
     settings: "Settings",
-    briefingNote:
-      "The briefing is the presenter's own notes and is kept in English. The prototype itself runs in both languages.",
     steps: {
       receive: "Goods receipt",
       evidence: "Evidence",
@@ -278,6 +276,199 @@ export const en = {
       "The change is a cookie in this browser. Another browser pointed at the same database sees the same records but resets to the supplied numbers.",
       "Nothing here is validated against a real purchase order. The values are accepted as typed, within the database's own constraints.",
     ],
+  },
+
+  // The presenter briefing at /docs. It was English-only on the grounds that it
+  // is the operator's own notes; it is translated now, because a reviewer
+  // reading the prototype in Arabic should be able to read the claims it makes
+  // about itself in Arabic too. Record ids, table names, file paths and shell
+  // commands stay Latin: they are identifiers, not prose.
+  //
+  // Emphasis travels inside the strings - *bold*, _italic_, `mono` - because
+  // Arabic re-orders the sentence, so the marked words move with it instead of
+  // being wrapped in JSX out here.
+  docs: {
+    metaTitle: "Presenter briefing — C04",
+    metaDescription:
+      "How to run the prototype, what it does today, and what is still a hypothesis.",
+    title: "Presenter briefing — C04",
+    subtitle:
+      "How to run it, the demo script, and an honest account of what is real. Five minutes to read.",
+    back: "← Back to the prototype",
+
+    sayFirstHeading: "Say this first",
+    pitch:
+      "Ten filters were ordered, ten arrived, ten were invoiced — but only *nine* went into stock. Today nobody can tell whether the missing one was a shortage, a damaged item, a duplicate scan or a second delivery, so the invoice gets paid or argued about on a hunch. We changed what the receiving lead records at the bay, so the difference resolves to a cause with evidence behind it.",
+
+    demoHeading: "The demo — six beats, about two minutes",
+    beats: [
+      "*Reset — start of shift.* Two delivery notes are at the bay. Nothing counted in, no invoice. Screen 3 shows _nothing to review_ — that is the empty state, and it is honest.",
+      "*Count in DN-1.* Counted in 8, damaged 1. Accepted shows `7` and cannot be typed over — it is derived, and the database refuses a receipt where the three do not balance. _This is the answer to the challenge question._",
+      "*Count in DN-2.* 2 and 0. You land on the evidence screen automatically: 10 ordered, 10 listed, 10 counted, 9 accepted. Nothing is wrong yet — the goods reconcile against the notes.",
+      "*Press “Supplier invoice arrives”* (purple — a simulation). The invoice bills 10. Two proposals are raised and you are taken to review. One click, no second prompt.",
+      "*Read the first proposal aloud.* Leading cause _Damage_, marked _likely_, with Shortage, Duplicate scan and Second delivery still listed as open. Evidence: `INV-1 · DN-1 · DN-2 · RC-1`. Proposed action: request a credit note. Then say the important line: _it proposes, it does not decide._",
+      "*Approve it* — or press _Correct it_, pick a different cause and type a reason. Either way the decision, the reviewer and the final cause are recorded, and the history shows which. Then press “Supplier issues a credit note” to watch the gap close to reconciled. The second proposal is the duplicate-scan question — two notes against one order — and it is there to show the system asks rather than assumes.",
+    ],
+    thirtyLabel: "If you only have 30 seconds",
+    thirtyBody:
+      "Reset — invoice arrived. That drops you straight into the proposal on screen 3. Read it, approve it, done.",
+
+    runHeading: "Run it",
+    runSteps: [
+      "`cd web && npm install` — once, if `node_modules` is missing.",
+      "`web/.env.local` must hold the Supabase URL, publishable key and secret key. It is gitignored, so after a fresh clone — and only then — copy `web/.env.example` over and fill it in. *If the file already exists, leave it alone:* copying the example over a filled-in file replaces the keys with placeholders and every screen 500s.",
+      "Run `npm run dev`, then open `http://localhost:3000`.",
+    ],
+    resetLabel: "Reset to a known start state",
+    resetBody:
+      "Use the two reset buttons at the bottom of any screen — they rebuild the database from the supplied records in one click. Pasting `supabase/seed.sql` into the Supabase SQL editor does the same thing. Run `npm run check:seed` to prove the app still reseeds the supplied values unaltered.",
+
+    whoHeading: "Who is in the story",
+    roles: {
+      receiver: {
+        who: "Receiving lead (screen 1)",
+        does: "Unloads the delivery and records the goods receipt: counted in, damaged, accepted. Two numbers typed, the third derived.",
+        why: "The person the challenge question is about. Everything downstream depends on the thirty seconds they have at the bay.",
+      },
+      reconciler: {
+        who: "Reconciler / reviewer (screen 3)",
+        does: "Gets the invoice weeks later, reads the proposal and its evidence, and approves, corrects or rejects it.",
+        why: "The victim of the current process, and the only actor who can settle a difference. Their answer becomes the record — not the system's.",
+      },
+    },
+    noLoginLabel: "There is no login",
+    noLoginBody:
+      "No accounts, no authentication. The reviewer is a name typed into a field. Say this rather than let the demo imply an identity model it does not have.",
+
+    existsHeading: "What exists today",
+    features: {
+      flow: {
+        name: "Three-screen receiving flow",
+        body: "Goods receipt, then the linked evidence, then the discrepancy review — with working buttons on every step.",
+      },
+      quantities: {
+        name: "Three quantities kept separate",
+        body: "Accepted is derived from counted-in minus damaged and stored separately. A database check constraint makes an unbalanced receipt impossible to write, so the rule holds even if the app is wrong.",
+      },
+      proposal: {
+        name: "Ranked proposal, decision left open",
+        body: "The system names the most likely cause with a confidence, keeps the other candidates visible, and states what would settle it. It never closes the gap itself.",
+      },
+      review: {
+        name: "Human review that sets the state",
+        body: "Approve, correct or reject. A correction overrides the proposed cause, and the reviewer, the note and the final cause are all recorded.",
+      },
+      events: {
+        name: "Two labelled simulated events",
+        body: "The invoice arriving and the supplier issuing a credit note. Each updates the evidence and the outstanding proposal in one press.",
+      },
+      states: {
+        name: "Empty and uncertain states",
+        body: "Nothing at the bay, no evidence yet, nothing to review — each is a designed screen. The uncertain state is the default on screen 3.",
+      },
+      languages: {
+        name: "English and Arabic, including the engine",
+        body: "The switch in the header changes every screen — this briefing included — and the page comes back right-to-left with an Arabic face. The reconciliation engine’s own sentences are translated too: a proposal stores the facts alongside the English text, so a difference raised in one language reads correctly in the other. Record ids, quantities and typed notes are never translated.",
+      },
+      settings: {
+        name: "Case settings, as scaffolding",
+        body: "`/settings` edits the ordered, listed, counted, damaged and invoiced quantities and the part name, then rebuilds the case from them. It exists to answer “does this only work for 10 FILTER-X?” — the engine reads those numbers from Postgres, so changing them re-ranks the cause. It is labelled prototype-only on the page, the change lives in a cookie rather than in `initial.json`, and the top banner says so until it is restored. A shipped system takes these from the ERP.",
+      },
+      rls: {
+        name: "No write without review, enforced",
+        body: "The browser key can read and nothing else; a write from it fails with Postgres `42501`. Every state change goes through a server action.",
+      },
+      external: {
+        name: "Anything leaving the building",
+        body: "No supplier email, no stock posting, no accounting entry. An approved action is recorded and labelled “Not sent”. This is deliberate — the exercise forbids it — but it is the boundary of the demo.",
+      },
+    },
+
+    pathsHeading: "The three paths",
+    paths: {
+      ordinary: {
+        name: "Ordinary",
+        body: "Reset to start of shift, count in both notes. Ten listed, ten counted, the goods reconcile against the notes and there is nothing to review. The boring case — show it for ten seconds so the exception has contrast.",
+      },
+      changed: {
+        name: "Changed information",
+        body: "Press “Supplier invoice arrives”, then later “Supplier issues a credit note”. Each is a labelled simulation that injects one record and lets the reconciliation and the proposal update on their own. The credit note is a new record; INV-1 is never edited.",
+      },
+      failure: {
+        name: "Failure / uncertainty",
+        body: "The default state of screen 3. Damage is flagged as likely because it matches the gap exactly, but shortage, duplicate scan and second delivery stay on the card, and the proposal says plainly that these records alone do not settle it. Press “Correct it” to show the reviewer overriding the system.",
+      },
+    },
+
+    decisionHeading: "The one design decision to defend",
+    decisionLead:
+      "The engine could assert “damage” and close the gap: one unit damaged, one unit of difference, the arithmetic works. It proposes it instead.",
+    decisionBody:
+      "Damage explaining the gap arithmetically is not the supplier agreeing to credit it, and nothing in these records proves that. A system that quietly picks the convenient cause produces a number somebody later has to defend to a supplier without knowing where it came from — which is the pain the client described. So it ranks, shows the alternatives, says what would settle it, and hands the decision to a person.",
+    decisionAside:
+      "If someone argues it should just answer: that is a product choice, not a technical limit. Ask them who signs the credit note.",
+
+    realHeading: "Real vs simulated",
+    thComponent: "Component",
+    thStatus: "Status",
+    thEvidence: "Evidence and limitation",
+    rows: {
+      capture: {
+        c: "Receipt capture",
+        s: "Real",
+        l: "Writes a row through a server action. The DB check constraint rejects an unbalanced receipt.",
+      },
+      records: {
+        c: "Records and persistence",
+        s: "Real",
+        l: "Live Supabase Postgres, 8 tables. Reseeded from the supplied records; npm run check:seed proves they are unaltered.",
+      },
+      engine: {
+        c: "Reconciliation and proposal",
+        s: "Real",
+        l: "Pure TypeScript, no model call. Deterministic — the same records always give the same proposal.",
+      },
+      review: {
+        c: "Human review",
+        s: "Real",
+        l: "Approve / correct / reject writes a review_decisions row. RLS blocks the browser key from writing at all.",
+      },
+      events: {
+        c: "Event trigger",
+        s: "Simulated, labelled",
+        l: "Two buttons inject the invoice and the credit note. Marked purple and tagged Simulated wherever they appear.",
+      },
+      scans: {
+        c: "Scanned documents",
+        s: "Simulated",
+        l: "No OCR. Notes and invoices are structured rows, as the exercise permits.",
+      },
+      external: {
+        c: "External action",
+        s: "None, by design",
+        l: "No supplier message, stock update or accounting entry is executed. Approved actions are recorded and labelled Not sent.",
+      },
+    },
+
+    limitsHeading: "Limitations, and what you would test next",
+    limits: [
+      "One order, one part, one invoice. No catalogue, partial invoices or price lines.",
+      "Row-level security is demo-open: anyone with the URL can read, and the demo buttons let anyone reset it. Deliberate for the exercise, not a production posture.",
+      "No authentication, so “who approved this” is a text field, not an identity.",
+      "The four candidate causes are the ones the client named, hand-written. A real receiving bay will have more.",
+      "The screens read live from Supabase; without network they will not load.",
+    ],
+    nextTestLabel: "Next validation test",
+    nextTestBody:
+      "Take one week of real delivery notes and invoices from one supplier, run them through the reconciliation, and count how many differences resolve to a single cause with evidence versus how many still need a phone call. Success is a fall in those calls, judged by the reconciler — not by us.",
+    close:
+      "Close on the split: what is *demonstrated* is that the right receipt record makes a difference resolvable with evidence, and that a person stays in the loop. What remains a *hypothesis* is that this reduces reconciliation effort at real volume.",
+
+    status: {
+      built: "Built",
+      partial: "Partial",
+      pending: "Not built",
+    },
   },
 
   error: {
