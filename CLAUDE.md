@@ -11,6 +11,12 @@ Supplied materials (do not alter their substance):
 - `case-pack.md` — the candidate pack: client situation, working agreement, demo checklist and the Wolf handoff template. Renamed from `readme.md` and reformatted; wording unchanged.
 - `initial.json` — the entire synthetic dataset. Everything the prototype reconciles comes from this file.
 
+Received from the organiser during the exercise:
+
+- `ref/client-messages-logs` — the checkpoint emails from Yassine Bekri (DaiL). The third one assigns the client: **trast digital gmbh** (<https://trast.de/>), target users *parts receiving leads and colleagues reconciling delivery and invoice evidence*, and makes **client fit a review criterion** — how closely the UI, visual language, wording and workflow reflect the assigned organisation.
+- `ref/image*.png` — screenshots of trast.de kept for that reason: all-lowercase headings and nav, pill-outline buttons, a geometric sans, indigo/electric-blue/coral gradients on light grey, and an informal German voice. Note the collision to resolve before adopting it: **indigo is currently the prototype's "simulated" colour**, and it is trast's brand colour.
+- `meme-for-prestantion.jpeg` — for the presentation.
+
 Our own writing:
 
 - `README.md` — the deliverable README: result first, run instructions, real vs simulated, limitations, next validation test.
