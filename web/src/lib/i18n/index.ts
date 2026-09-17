@@ -1,17 +1,19 @@
 import { ar } from "./ar";
+import { de } from "./de";
 import { en, type Dict } from "./en";
 
 export { en } from "./en";
 export { ar } from "./ar";
+export { de } from "./de";
 export type { Dict, Dir } from "./en";
 
-export const LOCALES = ["en", "ar"] as const;
+export const LOCALES = ["en", "ar", "de"] as const;
 export type Locale = (typeof LOCALES)[number];
 
 /** Read on the server and written by the setLanguage action. */
 export const LOCALE_COOKIE = "c04-lang";
 
-const DICTS: Record<Locale, Dict> = { en, ar };
+const DICTS: Record<Locale, Dict> = { en, ar, de };
 
 export const isLocale = (v: unknown): v is Locale =>
   typeof v === "string" && (LOCALES as readonly string[]).includes(v);

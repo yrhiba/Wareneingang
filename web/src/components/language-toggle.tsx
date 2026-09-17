@@ -1,17 +1,17 @@
 "use client";
 
 import { setLanguage } from "@/app/actions";
-import { ar, en, LOCALES } from "@/lib/i18n";
+import { getDict, LOCALES } from "@/lib/i18n";
 
 import { useLocale, useT } from "./locale-provider";
-
-const LABEL = { en: en.short, ar: ar.short };
-const FULL = { en: en.name, ar: ar.name };
 
 /**
  * Language switch. A real form posting to a server action, not client state:
  * the choice has to reach the server so the next render picks the dictionary
  * AND the text direction. Doing it client-side would leave <html dir> stale.
+ *
+ * The label and the title come out of each dictionary rather than a map here,
+ * so adding a language is one file plus one line in i18n/index.ts.
  */
 export function LanguageToggle() {
   const active = useLocale();
@@ -31,14 +31,14 @@ export function LanguageToggle() {
           value={l}
           lang={l}
           aria-current={l === active ? "true" : undefined}
-          title={FULL[l]}
+          title={getDict(l).name}
           className={`rounded-md px-2 py-0.5 text-xs transition ${
             l === active
               ? "bg-foreground font-semibold text-background"
               : "text-muted hover:text-foreground"
           }`}
         >
-          {LABEL[l]}
+          {getDict(l).short}
         </button>
       ))}
     </form>

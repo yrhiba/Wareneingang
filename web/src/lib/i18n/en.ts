@@ -3,14 +3,17 @@ import type { Cause, Confidence } from "@/lib/types";
 export type Dir = "ltr" | "rtl";
 
 /**
- * English is the source dictionary. `ar.ts` is typed against it, so a key added
- * here that is not translated there fails the typecheck rather than silently
- * falling back to English mid-demo.
+ * English is the source dictionary. `ar.ts` and `de.ts` are typed against it, so
+ * a key added here that is not translated there fails the typecheck rather than
+ * silently falling back to English mid-demo.
  *
  * Arrows live inside the strings because they have to flip under RTL.
  */
 export const en = {
   dir: "ltr" as Dir,
+  // The BCP 47 tag for Intl, which is not always the locale code:
+  // this demo is British-English and Moroccan-Arabic.
+  bcp47: "en-GB",
   name: "English",
   short: "EN",
 
@@ -367,8 +370,8 @@ export const en = {
         body: "Nothing at the bay, no evidence yet, nothing to review — each is a designed screen. The uncertain state is the default on screen 3.",
       },
       languages: {
-        name: "English and Arabic, including the engine",
-        body: "The switch in the header changes every screen — this briefing included — and the page comes back right-to-left with an Arabic face. The reconciliation engine’s own sentences are translated too: a proposal stores the facts alongside the English text, so a difference raised in one language reads correctly in the other. Record ids, quantities and typed notes are never translated.",
+        name: "English, Arabic and German, including the engine",
+        body: "The switch in the header changes every screen — this briefing included — and Arabic comes back right-to-left with an Arabic face. The reconciliation engine’s own sentences are translated too: a proposal stores the facts alongside the English text, so a difference raised in one language reads correctly in the others. Record ids, quantities and typed notes are never translated.",
       },
       settings: {
         name: "Case settings, as scaffolding",

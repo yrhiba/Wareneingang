@@ -31,8 +31,7 @@ const STATUS_CLASS = {
 
 /** Screen 3 - the reviewer decides. Nothing else in the app settles a difference. */
 export default async function ReviewPage() {
-  const locale = await getLocale();
-  const t = getDict(locale);
+  const t = getDict(await getLocale());
   const {
     invoice,
     proposals,
@@ -210,9 +209,11 @@ export default async function ReviewPage() {
                       <span className="ms-auto text-xs text-faint">
                         {d.reviewer} ·{" "}
                         {new Date(d.decided_at).toLocaleTimeString(
-                          // Morocco writes times with Latin digits in both
-                          // languages; only the am/pm marker changes.
-                          locale === "ar" ? "ar-MA" : "en-GB",
+                          // The tag lives in the dictionary next to the
+                          // language it belongs to: en-GB, ar-MA, de-DE.
+                          // Morocco writes times with Latin digits in both of
+                          // its languages; only the am/pm marker changes.
+                          t.bcp47,
                           { hour: "2-digit", minute: "2-digit" },
                         )}
                       </span>

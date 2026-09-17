@@ -86,7 +86,7 @@ st, url, body = post("/", find_form(get("/"), 'value="DN-1"'), {"received": "2",
 check("server rejects damaged > counted-in", st >= 400 or "cannot be negative or exceed" in body, f"status {st}")
 check("no receipt was written", "Recorded this shift" not in text(get("/")), text(get("/"))[:200])
 
-step("E10", "Arabic: the same records, the other language")
+step("E10", "Arabic and German: the same records, the other languages")
 BASE = ns["BASE"]
 
 def get_as(path, lang):
@@ -129,6 +129,33 @@ check("but ids, paths and commands stay Latin",
       all(x in ar_docs for x in ["INV-1", "42501", "initial.json", "npm run check:seed"]), ar_docs[:300])
 check("the emphasis markers were rendered, not printed",
       "*" not in ar_docs and "`" not in ar_docs, ar_docs[:300])
+
+# German. The client for this exercise is a German company, so the same
+# round trip matters here: these proposals were written to Postgres in
+# English with the facts beside them, and this reads them back auf Deutsch.
+de_home = get_as("/", "de")
+check("German sets lang and stays left-to-right",
+      'lang="de"' in de_home and 'dir="ltr"' in de_home)
+
+de_rev = text(get_as("/review", "de"))
+check("German review renders the stored proposals",
+      "2 Vorschläge warten" in de_rev, de_rev[:200])
+check("German keeps the damage reading",
+      "Die Beschädigung von 1 auf RC-1" in de_rev, de_rev[:400])
+check("record ids are untranslated in German too", "INV-1" in de_rev)
+
+de_ev = text(get_as("/evidence", "de"))
+check("German evidence keeps the three quantities apart",
+      all(x in de_ev for x in ["Gezählt 10", "Angenommen 9", "1 beschädigt"]), de_ev[:400])
+
+de_docs = text(get_as("/docs", "de"))
+check("the briefing follows the switch into German",
+      "Sag das zuerst" in de_docs, de_docs[:200])
+check("no English prose left on the German briefing",
+      not any(x in de_docs for x in ["Not built", "Presenter briefing", "Run it"]),
+      de_docs[:300])
+check("and its emphasis markers were rendered, not printed",
+      "*" not in de_docs and "`" not in de_docs, de_docs[:300])
 
 b = uuid.uuid4().hex
 form = find_form(get("/review"), 'name="lang"')

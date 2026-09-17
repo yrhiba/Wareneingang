@@ -50,13 +50,15 @@ npm run dev                    # http://localhost:3000
 | `/docs` | Presenter briefing — demo script, roles, real vs simulated |
 | `/settings` | Case settings — the quantities the demo reconciles. Prototype scaffolding, labelled as such |
 
-**Language:** the header switches the whole prototype between **English** and
-**العربية**, right-to-left included. The choice is a cookie the server reads, so
-the correct language and text direction are in the first response — no flash, and
-the switch still works with JavaScript off. Everything follows it, including
-the `/docs` briefing — a reviewer reading the prototype in Arabic can read the
-claims it makes about itself in Arabic too. Record ids, file paths and shell
-commands stay Latin: they are identifiers, not prose.
+**Language:** the header switches the whole prototype between **English**,
+**العربية** and **Deutsch** — German because the assigned client is a German
+company, Arabic because the receiving bay in the case is a Moroccan one, and
+right-to-left included. The choice is a cookie the server reads, so the correct
+language and text direction are in the first response — no flash, and the switch
+still works with JavaScript off. Everything follows it, including the `/docs`
+briefing — a reviewer reading the prototype in German can read the claims it
+makes about itself in German too. Record ids, file paths and shell commands stay
+Latin: they are identifiers, not prose.
 
 **Changing the numbers:** nothing in the app hardcodes *10 × FILTER-X*. Every
 quantity is a row the engine reads, so `/settings` can change the ordered,
@@ -104,7 +106,7 @@ load. The secret key must never take a `NEXT_PUBLIC_` prefix.
 | Records and persistence | **Real** | Live Supabase Postgres, eight tables. Rows are the supplied records, unaltered. |
 | Reconciliation and proposal | **Real** | Pure TypeScript in `web/src/lib/reconcile.ts`. No model call; deterministic. |
 | Evidence view | **Real** | Every claim carries the record ids behind it. |
-| English / Arabic | **Real** | Every screen, both directions, the presenter briefing included. A proposal stores the facts behind its sentence, so one raised in English reads correctly in Arabic and back. Record ids, quantities and typed notes are never translated. |
+| English / Arabic / German | **Real** | Every screen, both text directions, the presenter briefing included. A proposal stores the facts behind its sentence, so one raised in one language reads correctly in the others. Record ids, quantities and typed notes are never translated. |
 | Human review | **Real** | Approve / correct / reject writes a `review_decisions` row; a correction overrides the proposed cause. |
 | "No write without review" | **Real, enforced** | RLS grants the browser key select only. A write from it fails with `42501` — verified, not assumed. |
 | Event trigger | **Simulated, labelled** | Two buttons inject the invoice and the credit note. Marked purple and tagged *Simulated* everywhere they appear. |
@@ -148,9 +150,12 @@ This is a product choice, not a technical limit.
 - The candidate causes are the four the client named, hand-written. A real
   receiving bay will have more.
 - The demo page reads live from Supabase; without network it will not load.
-- Arabic is a hand-written dictionary, not a translation service: a string added
-  to `en.ts` and not to `ar.ts` fails the typecheck rather than appearing in the
-  wrong language, but nothing checks the *quality* of the Arabic.
+- Arabic and German are hand-written dictionaries, not a translation service: a
+  string added to `en.ts` and not to `ar.ts` or `de.ts` fails the typecheck
+  rather than appearing in the wrong language, but nothing checks the *quality*
+  of either translation. The German addresses the reader as *du*, which is the
+  register the assigned client uses; a warehouse that expects *Sie* would want
+  that changed.
 
 ---
 
@@ -175,7 +180,7 @@ supabase/
   seed.sql          the reset button: truncate + reload from initial.json
   migrations/       additive migrations for a database that already has data
 web/                Next.js 16 app (App Router, TypeScript, Tailwind v4)
-  src/lib/i18n/          en.ts and ar.ts — ar is typed against en, so it cannot fall behind
+  src/lib/i18n/          en.ts, ar.ts and de.ts — each translation is typed against en, so none can fall behind
   src/lib/case-config/   the tunable case parameters and how they turn back into records
   src/lib/reconcile.ts   pure domain logic, no database
   src/lib/queries.ts     loads an order and everything referencing it
