@@ -2,7 +2,7 @@
 # These drive the real app and the real database - they leave the demo
 # reset to "start of shift" when they finish.
 """Edge cases. Everything here is a thing a nervous presenter actually does."""
-import sys, importlib.util, re, urllib.request, urllib.error, http.cookiejar, uuid
+import sys, html, importlib.util, re, urllib.request, urllib.error, http.cookiejar, uuid
 spec = importlib.util.spec_from_file_location("h", __file__.replace("e2e_edge.py", "e2e.py"))
 sys.argv = ["x"]
 src = open(__file__.replace("e2e_edge.py", "e2e.py")).read()
@@ -43,8 +43,12 @@ post("/", find_form(get("/"), 'value="DN-2"'), {"received": "2", "damaged": "0"}
 post("/review", find_form(get("/review"), "invoice_arrives"))
 post("/review", find_form(get("/review"), "invoice_arrives"))
 t = text(get("/evidence"))
-# "Supplier invoice" also matches the simulate button label, so count the row itself.
-check("still one invoice row billing 10", len(re.findall(r"bills DN-1 \+ DN-2 10 invoiced", t)) == 1, re.findall(r".{20}invoiced", t))
+# "Supplier invoice" also matches the simulate button label, so count the
+# quantity cell, which only the invoice row has. The row itself now carries a
+# link to the document, so the two are no longer adjacent in the text.
+check("still one invoice row billing 10",
+      len(re.findall(r"10 invoiced", t)) == 1 and "bills DN-1 + DN-2" in t,
+      re.findall(r".{30}invoiced", t))
 check("no duplicate proposals", text(get("/review")).count("Waiting for a decision") == 2)
 
 step("E5", "Approve (not correct) records the proposed cause")
@@ -224,7 +228,31 @@ t = text(cget("/"))
 check("restore brings back the supplied records", "FILTER-X" in t and "PUMP-SEAL" not in t, t[:300])
 check("and clears the changed marker", "Numbers changed in Settings" not in t, t[:200])
 
-step("E12", "Leave the database ready for the demo")
+step("E12", "The simulated document downloads as a PDF")
+reset("invoice_arrived")
+
+def pdf(path):
+    with urllib.request.urlopen(BASE + path) as r:
+        return r.read(5), r.headers.get("Content-Type")
+
+head, ctype = pdf("/documents/invoice")
+check("the invoice document is a real PDF", head == b"%PDF-", head)
+check("and it is served as one", ctype == "application/pdf", ctype)
+check("the credit note is a PDF too", pdf("/documents/credit-note")[0] == b"%PDF-")
+try:
+    urllib.request.urlopen(BASE + "/documents/nope")
+    check("an unknown document is refused", False, "200")
+except urllib.error.HTTPError as e:
+    check("an unknown document is refused", e.code == 404, e.code)
+check("the chain links the invoice document", "Document (PDF)" in text(get("/evidence")))
+# The box states the record before it is written, so its numbers have to be the
+# ones the event goes on to use - not a literal.
+t = get("/review")
+check("the confirmation box names the record it would write",
+      "INV-1, billing 10 \u00d7 FILTER-X against DN-1 + DN-2." in html.unescape(t),
+      t[t.find("billing"):][:120])
+
+step("E13", "Leave the database ready for the demo")
 reset("start_of_shift")
 t = text(get("/"))
 check("bay has both notes waiting", "2 delivery note s waiting" in t or "2 delivery notes waiting" in t, t[:300])

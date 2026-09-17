@@ -14,6 +14,7 @@ import {
   type CaseConfig,
 } from "@/lib/case-config";
 import { getCaseConfig } from "@/lib/case-config/server";
+import { CREDIT_NOTE_ID } from "@/lib/event-facts";
 import { isLocale, LOCALE_COOKIE } from "@/lib/i18n";
 import { createServerClient } from "@/lib/supabase/server";
 import { loadCase } from "@/lib/queries";
@@ -392,7 +393,7 @@ export async function simulateEvent(formData: FormData) {
       await db
         .from("credit_notes")
         .insert({
-          id: `CN-${Date.now().toString().slice(-4)}`,
+          id: CREDIT_NOTE_ID,
           invoice_id: invoice.id,
           quantity: gap,
           reason: `Supplier credit for ${gap} damaged unit(s) reported at receipt.`,

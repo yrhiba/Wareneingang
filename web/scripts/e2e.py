@@ -19,6 +19,10 @@ def get(path):
 def text(h):
     h = re.sub(r"<script.*?</script>", " ", h, flags=re.S)
     h = re.sub(r"<style.*?</style>", " ", h, flags=re.S)
+    # A closed <dialog> renders nothing on the page. The confirmation boxes name
+    # the same records the chain does, so leaving them in would count every id
+    # twice. The forms inside them are untouched: find_form reads the raw HTML.
+    h = re.sub(r"<dialog\b.*?</dialog>", " ", h, flags=re.S)
     return re.sub(r"[ \t\n]+", " ", html.unescape(re.sub(r"<[^>]+>", " ", h))).strip()
 
 def forms(h):

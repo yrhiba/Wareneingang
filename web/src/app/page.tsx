@@ -4,6 +4,7 @@ import { DemoBar } from "@/components/demo-bar";
 import { ReceiptForm } from "@/components/receipt-form";
 import { btn } from "@/components/button-styles";
 import { Card, EmptyState, SectionTitle, SimulatedTag } from "@/components/ui";
+import { eventFacts } from "@/lib/event-facts";
 import { getT } from "@/lib/i18n/server";
 import { loadCase } from "@/lib/queries";
 
@@ -12,8 +13,10 @@ export const dynamic = "force-dynamic";
 /** Screen 1 - the loading bay. Fast capture of what physically arrived. */
 export default async function ReceivePage() {
   const t = await getT();
+  const data = await loadCase();
   const { order, receipts, invoice, notes, creditNotesAvailable, reconciliation: rec } =
-    await loadCase();
+    data;
+  const facts = await eventFacts(data);
   const waiting = rec.awaitingReceipt;
   const gap = invoice ? rec.invoicedNet - rec.accepted : 0;
   const alert = invoice ? t.receive.invoiceGap(invoice.id, Math.abs(gap)) : null;
@@ -102,6 +105,7 @@ export default async function ReceivePage() {
         canInvoice={!invoice && receipts.length > 0}
         canCredit={gap > 0}
         creditNotesAvailable={creditNotesAvailable}
+        facts={facts}
       />
 
       <p className="mt-6 flex items-start gap-2 text-xs text-faint">

@@ -55,7 +55,24 @@ Three screens, in the order the work happens: `/` goods receipt → `/evidence` 
 - `src/app/actions.ts` — **every write in the app.** Nothing else can change state.
 - `src/lib/supabase/client.ts` (browser, publishable key) and `server.ts` (secret key, `server-only`).
 - RLS grants select only. The browser key is **verified unable to write** (`42501`), so every state change must go through a server action behind review.
-- Two simulated events (invoice arrives, credit note issued). Anything simulated is **coral** (`--sim`) and tagged; keep it that way. It was violet until the trast restyle made the client's indigo the brand colour - the two are the same hue family, so simulated moved to the client's coral rather than sitting next to ordinary chrome. The word and the ◆ carry the label too, so it survives greyscale. The convention is written down in nine dictionary strings (three each in `en.ts`, `de.ts`, `ar.ts`), the README table and here; move all of them together or `/docs` starts lying.
+- `src/lib/pdf/` — the simulated supplier document, as a real PDF. Hand-rolled
+  (`truetype.ts` reads the cmap and the widths, `writer.ts` emits the objects and
+  the xref) because the alternative was a dependency, and it embeds Montserrat
+  because a document set in Helvetica would read as a different product. Laid out
+  in the same language as the app: indigo block on the grey field, containers
+  square, controls round, the ◆ coral tag. Two absences are deliberate — **no
+  prices**, because `initial.json` has none and the working agreement forbids
+  inventing one, and **no client identity**, no logo or named bill-to. Its strings
+  live in `documents.ts`, not in `src/lib/i18n/`: Montserrat has no Arabic glyphs,
+  so the document is issued in English or German and the confirmation box says so
+  in all three. The fonts are read off disk, which is why `next.config.ts` traces
+  them.
+- Two simulated events (invoice arrives, credit note issued), each behind a
+  confirmation box that names the record it would write and offers that document
+  before anything is written — the demo controls should not be the one place this
+  prototype writes without asking. The trigger is a real submit button with the
+  dialog layered on top by JavaScript, so the no-script path the e2e suites use
+  still fires the event. Anything simulated is **coral** (`--sim`) and tagged; keep it that way. It was violet until the trast restyle made the client's indigo the brand colour - the two are the same hue family, so simulated moved to the client's coral rather than sitting next to ordinary chrome. The word and the ◆ carry the label too, so it survives greyscale. The convention is written down in nine dictionary strings (three each in `en.ts`, `de.ts`, `ar.ts`), the README table and here; move all of them together or `/docs` starts lying.
 
 ## The domain problem (why the numbers look inconsistent)
 

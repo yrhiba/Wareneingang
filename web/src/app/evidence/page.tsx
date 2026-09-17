@@ -10,6 +10,7 @@ import {
   SectionTitle,
   SimulatedTag,
 } from "@/components/ui";
+import { eventFacts } from "@/lib/event-facts";
 import { getT } from "@/lib/i18n/server";
 import { loadCase } from "@/lib/queries";
 import { renderDiscrepancy } from "@/lib/reconcile";
@@ -19,6 +20,7 @@ export const dynamic = "force-dynamic";
 /** Screen 2 - the chain. Which record supports which claim. */
 export default async function EvidencePage() {
   const t = await getT();
+  const data = await loadCase();
   const {
     order,
     notes,
@@ -28,7 +30,8 @@ export default async function EvidencePage() {
     creditNotes,
     creditNotesAvailable,
     reconciliation: rec,
-  } = await loadCase();
+  } = data;
+  const facts = await eventFacts(data);
 
   const gap = invoice ? rec.invoicedNet - rec.accepted : 0;
 
@@ -56,6 +59,7 @@ export default async function EvidencePage() {
           canInvoice={false}
           canCredit={false}
           creditNotesAvailable={creditNotesAvailable}
+          facts={facts}
         />
       </main>
     );
@@ -139,7 +143,9 @@ export default async function EvidencePage() {
             </thead>
             <tbody className="divide-y divide-line">
               <tr>
-                <td className="px-4 py-2.5 font-mono font-semibold">{order.id}</td>
+                <td className="whitespace-nowrap px-4 py-2.5 font-mono font-semibold">
+                  {order.id}
+                </td>
                 <td className="px-4 py-2.5 text-muted">
                   {t.evidence.purchaseOrder(order.part)}
                 </td>
@@ -152,7 +158,7 @@ export default async function EvidencePage() {
                 const r = receipts.find((x) => x.delivery_note === n.id);
                 return (
                   <tr key={n.id} className={n.duplicate_of ? "opacity-50" : undefined}>
-                    <td className="px-4 py-2.5 font-mono font-semibold">
+                    <td className="whitespace-nowrap px-4 py-2.5 font-mono font-semibold">
                       {n.id}
                       {r && <span className="text-faint"> → {r.id}</span>}
                     </td>
@@ -182,11 +188,25 @@ export default async function EvidencePage() {
 
               {invoice && (
                 <tr>
-                  <td className="px-4 py-2.5 font-mono font-semibold">{invoice.id}</td>
+                  <td className="whitespace-nowrap px-4 py-2.5 font-mono font-semibold">
+                    {invoice.id}
+                  </td>
                   <td className="px-4 py-2.5 text-muted">
-                    {t.evidence.invoiceBills(
-                      invoiceLines.map((l) => l.delivery_note).join(" + "),
-                    )}
+                    <span className="me-2">
+                      {t.evidence.invoiceBills(
+                        invoiceLines.map((l) => l.delivery_note).join(" + "),
+                      )}
+                    </span>
+                    {/* The scan belongs with the record it supports. Without
+                        this the document is only reachable from the dialog
+                        that delivered it, which closes and never comes back. */}
+                    <a
+                      href="/documents/invoice"
+                      download={`${invoice.id}.pdf`}
+                      className={btn.small}
+                    >
+                      {t.ui.documentPdf}
+                    </a>
                   </td>
                   <td
                     className="px-4 py-2.5 text-end tabular-nums text-muted"
@@ -199,7 +219,9 @@ export default async function EvidencePage() {
 
               {creditNotes.map((c) => (
                 <tr key={c.id} className="bg-sim-soft/40">
-                  <td className="px-4 py-2.5 font-mono font-semibold">{c.id}</td>
+                  <td className="whitespace-nowrap px-4 py-2.5 font-mono font-semibold">
+                    {c.id}
+                  </td>
                   <td className="px-4 py-2.5 text-muted">
                     {/*
                       A simulated credit note's reason is text this app wrote, so
@@ -212,6 +234,13 @@ export default async function EvidencePage() {
                       )}
                     </span>
                     {c.is_simulated && <SimulatedTag />}
+                    <a
+                      href="/documents/credit-note"
+                      download={`${c.id}.pdf`}
+                      className={`${btn.small} ms-2`}
+                    >
+                      {t.ui.documentPdf}
+                    </a>
                   </td>
                   <td
                     className="px-4 py-2.5 text-end tabular-nums text-muted"
@@ -253,6 +282,7 @@ export default async function EvidencePage() {
         canInvoice={!invoice && receipts.length > 0}
         canCredit={gap > 0}
         creditNotesAvailable={creditNotesAvailable}
+        facts={facts}
       />
     </main>
   );

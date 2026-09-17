@@ -58,6 +58,7 @@ export const en = {
   ui: {
     simulated: "Simulated",
     evidence: "Evidence:",
+    documentPdf: "Document (PDF)",
   },
 
   receive: {
@@ -216,6 +217,28 @@ export const en = {
     resetting: "Resetting…",
     creditReason: (n: number) =>
       `Supplier credit for ${n} damaged unit(s) reported at receipt.`,
+
+    // The box that stands between a click and a write. It exists because both
+    // of these buttons used to change the database on one press, mid-demo,
+    // with no statement of what they were about to do.
+    confirm: {
+      invoiceTitle: "Deliver the supplier's invoice",
+      creditTitle: "Issue the supplier's credit note",
+      lead: "Nothing leaves this prototype. No supplier is contacted, no stock moves and no accounting entry is made — the event writes the record below and nothing else.",
+      writes: "What gets recorded",
+      invoiceWrites: (id: string, qty: number, part: string, notes: string) =>
+        `${id}, billing ${qty} × ${part} against ${notes}.`,
+      creditWrites: (id: string, qty: number, invoiceId: string) =>
+        `${id}, crediting ${qty} unit(s) against ${invoiceId}. ${invoiceId} itself is never edited.`,
+      thenRaised:
+        "Any difference this creates is raised as a proposal for a person to approve or correct. It is not applied.",
+      documentHeading: "The document",
+      documentNote:
+        "A simulated scan of the document that arrives with the event. Quantities only — the exercise dataset carries no prices and none were invented.",
+      download: "Download the PDF",
+      cancel: "Cancel",
+      go: "Record it",
+    },
   },
 
   settings: {
@@ -363,7 +386,7 @@ export const en = {
       },
       events: {
         name: "Two labelled simulated events",
-        body: "The invoice arriving and the supplier issuing a credit note. Each updates the evidence and the outstanding proposal in one press.",
+        body: "The invoice arriving and the supplier issuing a credit note. Each asks first: the box names the exact record it would write, says plainly that nothing leaves the prototype, and offers that document as a PDF. Confirming updates the evidence and the outstanding proposal in one step.",
       },
       states: {
         name: "Empty and uncertain states",
@@ -439,12 +462,12 @@ export const en = {
       events: {
         c: "Event trigger",
         s: "Simulated, labelled",
-        l: "Two buttons inject the invoice and the credit note. Marked coral and tagged Simulated wherever they appear.",
+        l: "Two buttons inject the invoice and the credit note. Each confirms first and offers its document as a PDF. Marked coral and tagged Simulated wherever they appear.",
       },
       scans: {
         c: "Scanned documents",
         s: "Simulated",
-        l: "No OCR. Notes and invoices are structured rows, as the exercise permits.",
+        l: "No OCR. Notes and invoices are structured rows, as the exercise permits. The PDF a simulated event offers is generated from those rows — a document the prototype wrote, not one it read.",
       },
       external: {
         c: "External action",

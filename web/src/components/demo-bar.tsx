@@ -1,7 +1,9 @@
 "use client";
 
-import { resetDemo, simulateEvent } from "@/app/actions";
+import { resetDemo } from "@/app/actions";
+import type { EventFacts } from "@/lib/types";
 
+import { ConfirmEvent } from "./confirm-event";
 import { useT } from "./locale-provider";
 import { SubmitButton } from "./submit-button";
 import { btn } from "./button-styles";
@@ -11,15 +13,21 @@ import { SimulatedTag } from "./ui";
  * Demo controls. Everything here is explicitly a simulation - the exercise
  * allows an injected event only if it is labelled as one, so it is labelled
  * in the heading, on the tag and on every button.
+ *
+ * The two supplier events confirm first and offer their document; the two reset
+ * buttons do not, because they put the case back to a known start rather than
+ * adding a record to it.
  */
 export function DemoBar({
   canInvoice,
   canCredit,
   creditNotesAvailable = true,
+  facts,
 }: {
   canInvoice: boolean;
   canCredit: boolean;
   creditNotesAvailable?: boolean;
+  facts: EventFacts;
 }) {
   const t = useT();
   return (
@@ -38,27 +46,21 @@ export function DemoBar({
       )}
 
       <div className="flex flex-wrap gap-2">
-        <form action={simulateEvent}>
-          <input type="hidden" name="kind" value="invoice_arrives" />
-          <SubmitButton
-            className={btn.sim}
-            disabled={!canInvoice}
-            pendingLabel={t.demo.invoiceArriving}
-          >
-            {t.demo.invoiceArrives}
-          </SubmitButton>
-        </form>
+        <ConfirmEvent
+          kind="invoice_arrives"
+          facts={facts}
+          disabled={!canInvoice}
+          label={t.demo.invoiceArrives}
+          pendingLabel={t.demo.invoiceArriving}
+        />
 
-        <form action={simulateEvent}>
-          <input type="hidden" name="kind" value="credit_note" />
-          <SubmitButton
-            className={btn.sim}
-            disabled={!canCredit || !creditNotesAvailable}
-            pendingLabel={t.demo.creditIssuing}
-          >
-            {t.demo.creditIssued}
-          </SubmitButton>
-        </form>
+        <ConfirmEvent
+          kind="credit_note"
+          facts={facts}
+          disabled={!canCredit || !creditNotesAvailable}
+          label={t.demo.creditIssued}
+          pendingLabel={t.demo.creditIssuing}
+        />
 
         <div className="ms-auto flex flex-wrap gap-2">
           <form action={resetDemo}>

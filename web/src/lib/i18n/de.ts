@@ -60,6 +60,7 @@ export const de: Dict = {
   ui: {
     simulated: "Simuliert",
     evidence: "Belege:",
+    documentPdf: "Beleg (PDF)",
   },
 
   receive: {
@@ -226,6 +227,25 @@ export const de: Dict = {
     resetting: "Wird zurückgesetzt…",
     creditReason: (n: number) =>
       `Gutschrift des Lieferanten für ${n} bei der Annahme gemeldete beschädigte Einheit(en).`,
+
+    confirm: {
+      invoiceTitle: "Die Rechnung des Lieferanten einspielen",
+      creditTitle: "Die Gutschrift des Lieferanten ausstellen",
+      lead: "Nichts verlässt diesen Prototyp. Kein Lieferant wird kontaktiert, kein Bestand bewegt und keine Buchung erstellt — das Ereignis schreibt den Beleg unten und sonst nichts.",
+      writes: "Was aufgezeichnet wird",
+      invoiceWrites: (id: string, qty: number, part: string, notes: string) =>
+        `${id}, berechnet ${qty} × ${part} gegen ${notes}.`,
+      creditWrites: (id: string, qty: number, invoiceId: string) =>
+        `${id}, schreibt ${qty} Einheit(en) gegen ${invoiceId} gut. ${invoiceId} selbst wird nie geändert.`,
+      thenRaised:
+        "Jede Differenz, die dabei entsteht, geht als Vorschlag an eine Person, die ihn freigeben oder korrigieren kann. Angewendet wird nichts.",
+      documentHeading: "Der Beleg",
+      documentNote:
+        "Ein simulierter Scan des Belegs, der mit dem Ereignis eintrifft. Nur Mengen — der Übungsdatensatz enthält keine Preise, und es wurden keine erfunden.",
+      download: "PDF herunterladen",
+      cancel: "Abbrechen",
+      go: "Aufzeichnen",
+    },
   },
 
   settings: {
@@ -365,7 +385,7 @@ export const de: Dict = {
       },
       events: {
         name: "Zwei gekennzeichnete simulierte Ereignisse",
-        body: "Die eintreffende Rechnung und die Gutschrift des Lieferanten. Jedes aktualisiert mit einem Druck die Belege und den offenen Vorschlag.",
+        body: "Die eintreffende Rechnung und die Gutschrift des Lieferanten. Beide fragen zuerst: das Fenster nennt genau den Beleg, der geschrieben würde, sagt klar, dass nichts den Prototyp verlässt, und bietet diesen Beleg als PDF an. Das Bestätigen aktualisiert Belege und offenen Vorschlag in einem Schritt.",
       },
       states: {
         name: "Leere und unklare Zustände",
@@ -441,12 +461,12 @@ export const de: Dict = {
       events: {
         c: "Auslösendes Ereignis",
         s: "Simuliert, gekennzeichnet",
-        l: "Zwei Schaltflächen spielen die Rechnung und die Gutschrift ein. Überall korallrot markiert und mit „Simuliert“ getaggt.",
+        l: "Zwei Schaltflächen spielen die Rechnung und die Gutschrift ein. Beide bestätigen zuerst und bieten ihren Beleg als PDF an. Überall korallrot markiert und mit „Simuliert“ getaggt.",
       },
       scans: {
         c: "Gescannte Dokumente",
         s: "Simuliert",
-        l: "Kein OCR. Lieferscheine und Rechnungen sind strukturierte Zeilen, wie die Übung es erlaubt.",
+        l: "Kein OCR. Lieferscheine und Rechnungen sind strukturierte Zeilen, wie die Übung es erlaubt. Das PDF, das ein simuliertes Ereignis anbietet, wird aus diesen Zeilen erzeugt — ein Beleg, den der Prototyp geschrieben hat, nicht einer, den er gelesen hat.",
       },
       external: {
         c: "Externe Maßnahme",

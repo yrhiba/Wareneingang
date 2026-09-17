@@ -19,4 +19,7 @@ export const btn = {
   secondary: `${pill} border border-brand/45 font-semibold text-brand hover:border-brand hover:bg-brand-soft`,
   sim: `${pill} border border-sim/40 bg-sim-soft font-semibold text-sim hover:border-sim`,
   danger: `${pill} border border-line bg-surface font-medium text-muted hover:border-faint`,
+  /** The same outline pill at table scale, for a control that sits in a row. */
+  small:
+    "lc inline-flex items-center whitespace-nowrap rounded-full border border-brand/40 px-2.5 py-0.5 text-[11px] font-semibold text-brand transition hover:border-brand hover:bg-brand-soft",
 };

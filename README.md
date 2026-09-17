@@ -127,9 +127,9 @@ load. The secret key must never take a `NEXT_PUBLIC_` prefix.
 | English / Arabic / German | **Real** | Every screen, both text directions, the presenter briefing included. A proposal stores the facts behind its sentence, so one raised in one language reads correctly in the others. Record ids, quantities and typed notes are never translated. |
 | Human review | **Real** | Approve / correct / reject writes a `review_decisions` row; a correction overrides the proposed cause. |
 | "No write without review" | **Real, enforced** | RLS grants the browser key select only. A write from it fails with `42501` — verified, not assumed. |
-| Event trigger | **Simulated, labelled** | Two buttons inject the invoice and the credit note. Marked coral and tagged *Simulated* everywhere they appear — coral, because the client's brand indigo now carries the interface. |
+| Event trigger | **Simulated, labelled** | Two buttons inject the invoice and the credit note. Each confirms first, naming the record it would write, and offers that document as a PDF. Marked coral and tagged *Simulated* everywhere they appear — coral, because the client's brand indigo now carries the interface. |
 | Case settings | **Real, scaffolding** | `/settings` writes real rows through the same server action path. Labelled prototype-only on the page; the change is a cookie, not an edit to `initial.json`, and the banner marks it. |
-| Scanned-document input | **Simulated** | No OCR. Delivery notes and invoices are structured rows, as the exercise permits. |
+| Scanned-document input | **Simulated** | No OCR. Delivery notes and invoices are structured rows, as the exercise permits. The PDF a simulated event offers is generated from those rows — a document the prototype wrote, not one it read. It carries quantities only: `initial.json` has no prices and none were invented. |
 | External action | **None, by design** | No supplier message, stock update or accounting entry. Approved actions are recorded and labelled *Not sent*. |
 
 ---

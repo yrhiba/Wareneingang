@@ -14,6 +14,7 @@ import {
   SimulatedTag,
 } from "@/components/ui";
 import { SubmitButton } from "@/components/submit-button";
+import { eventFacts } from "@/lib/event-facts";
 import { getLocale } from "@/lib/i18n/server";
 import { getDict } from "@/lib/i18n";
 import { loadCase } from "@/lib/queries";
@@ -39,6 +40,7 @@ const STATUS_CLASS = {
 /** Screen 3 - the reviewer decides. Nothing else in the app settles a difference. */
 export default async function ReviewPage() {
   const t = getDict(await getLocale());
+  const data = await loadCase();
   const {
     invoice,
     proposals,
@@ -46,7 +48,8 @@ export default async function ReviewPage() {
     receipts,
     creditNotesAvailable,
     reconciliation: rec,
-  } = await loadCase();
+  } = data;
+  const facts = await eventFacts(data);
 
   const pending = proposals.filter((p) => p.status === "pending");
   const settled = proposals.filter((p) => p.status !== "pending");
@@ -252,6 +255,7 @@ export default async function ReviewPage() {
         canInvoice={!invoice && receipts.length > 0}
         canCredit={gap > 0}
         creditNotesAvailable={creditNotesAvailable}
+        facts={facts}
       />
     </main>
   );

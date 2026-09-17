@@ -111,3 +111,26 @@ export type ReviewDecision = {
   final_state: { cause?: Cause; action?: string } | null;
   decided_at: string;
 };
+
+/**
+ * What a simulated supplier event would write, resolved before it is written.
+ *
+ * The confirmation box has to state the record it is about to create, and the
+ * downloadable document has to show the same ids and quantities - including
+ * before the event has happened, when there is no row to read them off. So they
+ * are resolved once, from the live records where those exist and from the
+ * active case config where they do not.
+ */
+export type EventFacts = {
+  orderId: string;
+  part: string;
+  invoiceId: string;
+  invoiceQty: number;
+  /** The delivery notes the invoice bills against. */
+  noteIds: string[];
+  creditId: string;
+  /** What the credit note covers: the gap, or the issued note's quantity. */
+  creditQty: number;
+  invoiceArrived: boolean;
+  creditIssued: boolean;
+};
