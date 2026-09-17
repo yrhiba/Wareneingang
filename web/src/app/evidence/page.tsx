@@ -35,6 +35,14 @@ export default async function EvidencePage() {
   if (receipts.length === 0) {
     return (
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+        {/* The heading belongs on both branches. Start of shift is the state the
+            demo opens in, and without this the screen a reviewer reaches by
+            clicking "2" had no h1 at all. */}
+        <header className="mb-6">
+          <h1 className="text-xl font-semibold tracking-tight">
+            {t.evidence.title(order.id, order.part)}
+          </h1>
+        </header>
         <EmptyState
           title={t.evidence.emptyTitle}
           body={t.evidence.emptyBody(notes.length)}
