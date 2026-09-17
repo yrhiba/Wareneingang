@@ -10,12 +10,15 @@ import {
   SectionTitle,
   SimulatedTag,
 } from "@/components/ui";
+import { getT } from "@/lib/i18n/server";
 import { loadCase } from "@/lib/queries";
+import { renderDiscrepancy } from "@/lib/reconcile";
 
 export const dynamic = "force-dynamic";
 
 /** Screen 2 - the chain. Which record supports which claim. */
 export default async function EvidencePage() {
+  const t = await getT();
   const {
     order,
     notes,
@@ -33,19 +36,19 @@ export default async function EvidencePage() {
     return (
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
         <EmptyState
-          title="No evidence yet"
-          body={`${notes.length} delivery note${notes.length === 1 ? " is" : "s are"} at the bay but nothing has been counted in. The chain starts with the goods receipt.`}
+          title={t.evidence.emptyTitle}
+          body={t.evidence.emptyBody(notes.length)}
           action={
             <Link href="/" className={btn.primary}>
-              Go to the bay →
+              {t.evidence.toBay}
             </Link>
           }
         />
         <DemoBar
-        canInvoice={false}
-        canCredit={false}
-        creditNotesAvailable={creditNotesAvailable}
-      />
+          canInvoice={false}
+          canCredit={false}
+          creditNotesAvailable={creditNotesAvailable}
+        />
       </main>
     );
   }
@@ -54,35 +57,43 @@ export default async function EvidencePage() {
     <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
       <header className="mb-6">
         <h1 className="text-xl font-semibold tracking-tight">
-          Evidence — {order.id} · {order.part}
+          {t.evidence.title(order.id, order.part)}
         </h1>
-        <p className="mt-1.5 max-w-2xl text-sm text-muted">
-          Every figure below traces to a record. The chain is receipt → delivery
-          note → order → invoice line, so a difference can be resolved to a cause
-          rather than argued about.
-        </p>
+        <p className="mt-1.5 max-w-2xl text-sm text-muted">{t.evidence.intro}</p>
       </header>
 
       {/* Result first. */}
       <section className="mb-8 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-5">
-        <Figure label="Ordered" value={rec.ordered} hint={order.id} />
-        <Figure label="Listed" value={rec.listed} hint={`${notes.length} notes`} />
-        <Figure label="Counted in" value={rec.received} hint="physically arrived" />
+        <Figure label={t.evidence.ordered} value={rec.ordered} hint={order.id} />
         <Figure
-          label="Accepted"
-          value={rec.accepted}
-          tone={rec.damaged > 0 ? "warn" : undefined}
-          hint={rec.damaged > 0 ? `${rec.damaged} damaged` : "none damaged"}
+          label={t.evidence.listed}
+          value={rec.listed}
+          hint={t.evidence.notesHint(notes.length)}
         />
         <Figure
-          label={rec.credited > 0 ? "Invoiced net" : "Invoiced"}
+          label={t.evidence.countedIn}
+          value={rec.received}
+          hint={t.evidence.arrivedHint}
+        />
+        <Figure
+          label={t.evidence.accepted}
+          value={rec.accepted}
+          tone={rec.damaged > 0 ? "warn" : undefined}
+          hint={
+            rec.damaged > 0
+              ? t.evidence.damagedHint(rec.damaged)
+              : t.evidence.noneDamaged
+          }
+        />
+        <Figure
+          label={rec.credited > 0 ? t.evidence.invoicedNet : t.evidence.invoiced}
           value={invoice ? rec.invoicedNet : "—"}
           tone={gap !== 0 ? "warn" : invoice ? "ok" : undefined}
           hint={
             !invoice
-              ? "no invoice yet"
+              ? t.evidence.noInvoiceYet
               : rec.credited > 0
-                ? `${rec.invoiced} billed − ${rec.credited} credited`
+                ? t.evidence.netHint(rec.invoiced, rec.credited)
                 : invoice.id
           }
         />
@@ -90,32 +101,42 @@ export default async function EvidencePage() {
 
       {invoice && gap === 0 && (
         <Card className="mb-8 border-ok/30 bg-ok-soft px-5 py-3 text-sm">
-          <strong className="text-ok">Reconciled.</strong> What the supplier claims
-          now matches what went into stock.
+          <strong className="text-ok">{t.evidence.reconciledLead}</strong>{" "}
+          {t.evidence.reconciledBody}
         </Card>
       )}
 
       <section className="mb-8">
-        <SectionTitle>The chain</SectionTitle>
+        <SectionTitle>{t.evidence.chain}</SectionTitle>
         <Card className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+          <table className="w-full text-start text-sm">
             <thead className="border-b border-line text-[11px] uppercase tracking-wide text-faint">
               <tr>
-                <th className="px-4 py-2.5 font-medium">Record</th>
-                <th className="px-4 py-2.5 font-medium">Supports</th>
-                <th className="px-4 py-2.5 text-right font-medium">Counted</th>
-                <th className="px-4 py-2.5 text-right font-medium">Damaged</th>
-                <th className="px-4 py-2.5 text-right font-medium">Accepted</th>
+                <th className="px-4 py-2.5 text-start font-medium">
+                  {t.evidence.thRecord}
+                </th>
+                <th className="px-4 py-2.5 text-start font-medium">
+                  {t.evidence.thSupports}
+                </th>
+                <th className="px-4 py-2.5 text-end font-medium">
+                  {t.evidence.thCounted}
+                </th>
+                <th className="px-4 py-2.5 text-end font-medium">
+                  {t.evidence.thDamaged}
+                </th>
+                <th className="px-4 py-2.5 text-end font-medium">
+                  {t.evidence.thAccepted}
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
               <tr>
                 <td className="px-4 py-2.5 font-mono font-semibold">{order.id}</td>
                 <td className="px-4 py-2.5 text-muted">
-                  Purchase order · {order.part}
+                  {t.evidence.purchaseOrder(order.part)}
                 </td>
-                <td className="px-4 py-2.5 text-right tabular-nums text-muted" colSpan={3}>
-                  {order.quantity} ordered
+                <td className="px-4 py-2.5 text-end tabular-nums text-muted" colSpan={3}>
+                  {t.evidence.orderedQty(order.quantity)}
                 </td>
               </tr>
 
@@ -129,20 +150,22 @@ export default async function EvidencePage() {
                     </td>
                     <td className="px-4 py-2.5 text-muted">
                       {n.duplicate_of
-                        ? `Duplicate scan of ${n.duplicate_of} — excluded`
-                        : `Delivery note · lists ${n.listed_quantity}`}
+                        ? t.evidence.duplicateOf(n.duplicate_of)
+                        : t.evidence.noteLists(n.listed_quantity)}
                     </td>
-                    <td className="px-4 py-2.5 text-right tabular-nums">
-                      {r?.received ?? <span className="text-faint">not counted</span>}
+                    <td className="px-4 py-2.5 text-end tabular-nums">
+                      {r?.received ?? (
+                        <span className="text-faint">{t.evidence.notCounted}</span>
+                      )}
                     </td>
                     <td
-                      className={`px-4 py-2.5 text-right tabular-nums ${
+                      className={`px-4 py-2.5 text-end tabular-nums ${
                         r && r.damaged > 0 ? "font-semibold text-accent" : ""
                       }`}
                     >
                       {r?.damaged ?? "—"}
                     </td>
-                    <td className="px-4 py-2.5 text-right font-semibold tabular-nums text-ok">
+                    <td className="px-4 py-2.5 text-end font-semibold tabular-nums text-ok">
                       {r?.accepted ?? "—"}
                     </td>
                   </tr>
@@ -153,14 +176,15 @@ export default async function EvidencePage() {
                 <tr>
                   <td className="px-4 py-2.5 font-mono font-semibold">{invoice.id}</td>
                   <td className="px-4 py-2.5 text-muted">
-                    Supplier invoice · bills{" "}
-                    {invoiceLines.map((l) => l.delivery_note).join(" + ")}
+                    {t.evidence.invoiceBills(
+                      invoiceLines.map((l) => l.delivery_note).join(" + "),
+                    )}
                   </td>
                   <td
-                    className="px-4 py-2.5 text-right tabular-nums text-muted"
+                    className="px-4 py-2.5 text-end tabular-nums text-muted"
                     colSpan={3}
                   >
-                    {invoice.quantity} invoiced
+                    {t.evidence.invoicedQty(invoice.quantity)}
                   </td>
                 </tr>
               )}
@@ -169,14 +193,23 @@ export default async function EvidencePage() {
                 <tr key={c.id} className="bg-sim-soft/40">
                   <td className="px-4 py-2.5 font-mono font-semibold">{c.id}</td>
                   <td className="px-4 py-2.5 text-muted">
-                    <span className="mr-2">Credit note · {c.reason}</span>
+                    {/*
+                      A simulated credit note's reason is text this app wrote, so
+                      it can be re-stated in the reader's language. A real
+                      supplier's wording would be quoted as it arrived.
+                    */}
+                    <span className="me-2">
+                      {t.evidence.creditNote(
+                        c.is_simulated ? t.demo.creditReason(c.quantity) : c.reason,
+                      )}
+                    </span>
                     {c.is_simulated && <SimulatedTag />}
                   </td>
                   <td
-                    className="px-4 py-2.5 text-right tabular-nums text-muted"
+                    className="px-4 py-2.5 text-end tabular-nums text-muted"
                     colSpan={3}
                   >
-                    −{c.quantity} credited
+                    {t.evidence.creditedQty(c.quantity)}
                   </td>
                 </tr>
               ))}
@@ -187,11 +220,13 @@ export default async function EvidencePage() {
 
       {rec.discrepancies.length > 0 && (
         <section className="mb-8">
-          <SectionTitle>What does not line up</SectionTitle>
+          <SectionTitle>{t.evidence.mismatch}</SectionTitle>
           <div className="space-y-3">
             {rec.discrepancies.map((d) => (
               <Card key={d.key} className="px-5 py-4">
-                <p className="font-medium">{d.statement}</p>
+                <p className="font-medium">
+                  {renderDiscrepancy(t, d.msg).statement}
+                </p>
                 <div className="mt-2">
                   <Evidence ids={d.evidence} />
                 </div>
@@ -200,7 +235,7 @@ export default async function EvidencePage() {
           </div>
           <div className="mt-4">
             <Link href="/review" className={btn.primary}>
-              Take it to review →
+              {t.evidence.toReview}
             </Link>
           </div>
         </section>

@@ -30,6 +30,38 @@ export type CreditNote = {
   created_at?: string;
 };
 
+/**
+ * Everything a generated sentence needs, without the sentence.
+ *
+ * The prose the engine produces has to appear in two languages and outlive the
+ * request that produced it: a proposal sits in the database until someone
+ * reviews it, possibly in the other language. So the facts travel as data and
+ * the wording is applied at render time, from the dictionary.
+ */
+export type DiscrepancyMessage =
+  | {
+      kind: "received_vs_listed";
+      listed: number;
+      received: number;
+      abs: number;
+      part: string;
+      notes: string[];
+    }
+  | {
+      kind: "invoiced_vs_accepted";
+      /** Whether damage accounts for the gap exactly. Picks the wording. */
+      variant: "damage" | "unclear";
+      invoiceId: string;
+      invoicedNet: number;
+      accepted: number;
+      delta: number;
+      damaged: number;
+      part: string;
+      receipts: string[];
+      notes: string[];
+    }
+  | { kind: "split_delivery"; count: number; orderId: string; ordered: number };
+
 /** The four candidate causes a difference can resolve to. */
 export type Cause =
   | "shortage"
@@ -57,6 +89,13 @@ export type Proposal = {
     part?: string;
     settled_by?: string;
     alternatives?: Cause[];
+    /**
+     * The facts behind the generated sentences. Stored alongside the English
+     * prose so the review screen can re-render a proposal in whichever
+     * language the reviewer picked, long after it was raised. Optional: rows
+     * written before this existed fall back to the stored text.
+     */
+    msg?: DiscrepancyMessage;
   } | null;
   status: ProposalStatus;
   is_simulated: boolean;
@@ -71,12 +110,4 @@ export type ReviewDecision = {
   note: string | null;
   final_state: { cause?: Cause; action?: string } | null;
   decided_at: string;
-};
-
-export const CAUSE_LABEL: Record<Cause, string> = {
-  shortage: "Shortage",
-  damage: "Damage",
-  duplicate_scan: "Duplicate scan",
-  second_delivery: "Second delivery",
-  unknown: "Unknown",
 };

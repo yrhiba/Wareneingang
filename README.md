@@ -45,6 +45,12 @@ npm run dev                    # http://localhost:3000
 | `/review` | **3. Review** — the proposal, its evidence, and approve / correct / reject |
 | `/docs` | Presenter briefing — demo script, roles, real vs simulated |
 
+**Language:** the header switches the whole prototype between **English** and
+**العربية**, right-to-left included. The choice is a cookie the server reads, so
+the correct language and text direction are in the first response — no flash, and
+the switch still works with JavaScript off. `/docs` stays English on purpose: it
+is the presenter's own notes, and it says so when you are reading in Arabic.
+
 **Repeatable start state:** two reset buttons at the bottom of every screen
 rebuild the database from the supplied records in one click — *start of shift*
 (notes at the bay, nothing counted in, no invoice) and *invoice arrived* (the
@@ -75,6 +81,7 @@ load. The secret key must never take a `NEXT_PUBLIC_` prefix.
 | Records and persistence | **Real** | Live Supabase Postgres, eight tables. Rows are the supplied records, unaltered. |
 | Reconciliation and proposal | **Real** | Pure TypeScript in `web/src/lib/reconcile.ts`. No model call; deterministic. |
 | Evidence view | **Real** | Every claim carries the record ids behind it. |
+| English / Arabic | **Real** | Every screen, both directions. A proposal stores the facts behind its sentence, so one raised in English reads correctly in Arabic and back. Record ids, quantities and typed notes are never translated. |
 | Human review | **Real** | Approve / correct / reject writes a `review_decisions` row; a correction overrides the proposed cause. |
 | "No write without review" | **Real, enforced** | RLS grants the browser key select only. A write from it fails with `42501` — verified, not assumed. |
 | Event trigger | **Simulated, labelled** | Two buttons inject the invoice and the credit note. Marked purple and tagged *Simulated* everywhere they appear. |
@@ -114,6 +121,9 @@ This is a product choice, not a technical limit.
 - The candidate causes are the four the client named, hand-written. A real
   receiving bay will have more.
 - The demo page reads live from Supabase; without network it will not load.
+- Arabic is a hand-written dictionary, not a translation service: a string added
+  to `en.ts` and not to `ar.ts` fails the typecheck rather than appearing in the
+  wrong language, but nothing checks the *quality* of the Arabic.
 
 ---
 
@@ -138,6 +148,7 @@ supabase/
   seed.sql          the reset button: truncate + reload from initial.json
   migrations/       additive migrations for a database that already has data
 web/                Next.js 16 app (App Router, TypeScript, Tailwind v4)
+  src/lib/i18n/          en.ts and ar.ts — ar is typed against en, so it cannot fall behind
   src/lib/reconcile.ts   pure domain logic, no database
   src/lib/queries.ts     loads an order and everything referencing it
   src/lib/seed-data.ts   the supplied records, guarded by npm run check:seed

@@ -1,6 +1,9 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 
+import { getDict } from "@/lib/i18n";
+import { getLocale } from "@/lib/i18n/server";
+
 export const metadata: Metadata = {
   title: "Presenter briefing — C04",
   description: "How to run the prototype, what it does today, and what is still a hypothesis.",
@@ -10,10 +13,27 @@ export const metadata: Metadata = {
  * Static briefing page. Deliberately does NOT touch the database: if Supabase is
  * down mid-presentation this page still opens and still explains the demo.
  * Keep it honest - every "not built" below is a claim the demo cannot back.
+ *
+ * It stays English and left-to-right in both languages: these are the operator's
+ * own notes, and half of what they name - table names, button labels, file paths
+ * - only exists in English. A localised line at the top says so rather than
+ * leaving a reader to wonder whether the switch failed.
  */
-export default function DocsPage() {
+export default async function DocsPage() {
+  const locale = await getLocale();
+  const t = getDict(locale);
+
   return (
-    <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+    <main dir="ltr" className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+      {locale !== "en" && (
+        <p
+          dir={t.dir}
+          lang={locale}
+          className="mb-8 rounded-lg border border-line bg-surface px-4 py-2.5 text-sm text-muted"
+        >
+          {t.chrome.briefingNote}
+        </p>
+      )}
       <header className="mb-10">
         <h1 className="text-2xl font-semibold tracking-tight">
           Presenter briefing — C04
@@ -161,6 +181,14 @@ export default function DocsPage() {
           <Feature status="built" name="Empty and uncertain states">
             Nothing at the bay, no evidence yet, nothing to review — each is a
             designed screen. The uncertain state is the default on screen 3.
+          </Feature>
+          <Feature status="built" name="English and Arabic, including the engine">
+            The switch in the header changes every screen, and the page comes back
+            right-to-left with an Arabic face. The reconciliation engine’s own
+            sentences are translated too: a proposal stores the facts alongside the
+            English text, so a difference raised in one language reads correctly in
+            the other. Record ids, quantities and typed notes are never translated.
+            This briefing stays English.
           </Feature>
           <Feature status="built" name="No write without review, enforced">
             The browser key can read and nothing else; a write from it fails with

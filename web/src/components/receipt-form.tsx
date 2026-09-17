@@ -5,6 +5,7 @@ import { useState } from "react";
 import { captureReceipt } from "@/app/actions";
 import type { DeliveryNote } from "@/lib/types";
 
+import { useT } from "./locale-provider";
 import { SubmitButton } from "./submit-button";
 import { btn, Card } from "./ui";
 
@@ -17,6 +18,7 @@ import { btn, Card } from "./ui";
  * unresolvable later.
  */
 export function ReceiptForm({ note }: { note: DeliveryNote }) {
+  const t = useT();
   const [received, setReceived] = useState(note.listed_quantity);
   const [damaged, setDamaged] = useState(0);
 
@@ -29,12 +31,15 @@ export function ReceiptForm({ note }: { note: DeliveryNote }) {
       <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-line px-5 py-3">
         <div>
           <span className="font-mono text-sm font-semibold">{note.id}</span>
-          <span className="ml-2 text-sm text-muted">
-            {note.part} · against {note.order_id}
+          <span className="ms-2 text-sm text-muted">
+            {t.form.noteFor(note.part, note.order_id)}
           </span>
         </div>
         <span className="text-sm text-muted">
-          Note lists <strong className="tabular-nums text-foreground">{note.listed_quantity}</strong>
+          {t.form.noteLists}{" "}
+          <strong className="tabular-nums text-foreground">
+            {note.listed_quantity}
+          </strong>
         </span>
       </div>
 
@@ -43,15 +48,15 @@ export function ReceiptForm({ note }: { note: DeliveryNote }) {
 
         <div className="grid gap-4 sm:grid-cols-3">
           <QtyField
-            label="Counted in"
-            hint="What you physically counted off the pallet"
+            label={t.form.countedIn}
+            hint={t.form.countedInHint}
             name="received"
             value={received}
             onChange={setReceived}
           />
           <QtyField
-            label="Damaged"
-            hint="Arrived, but not usable"
+            label={t.form.damagedLabel}
+            hint={t.form.damagedHint}
             name="damaged"
             value={damaged}
             onChange={setDamaged}
@@ -59,26 +64,25 @@ export function ReceiptForm({ note }: { note: DeliveryNote }) {
           />
           <div className="rounded-lg border border-line bg-background px-3 py-2.5">
             <div className="text-[11px] font-medium uppercase tracking-wide text-faint">
-              Accepted into stock
+              {t.form.acceptedLabel}
             </div>
             <div className="qty-input mt-1 text-3xl font-semibold text-ok">
               {accepted}
             </div>
             <div className="mt-1 text-[11px] leading-tight text-faint">
-              Derived: counted in − damaged. Stored separately from both.
+              {t.form.acceptedHint}
             </div>
           </div>
         </div>
 
         {short > 0 && (
           <p className="mt-4 rounded-lg bg-accent-soft px-3 py-2 text-sm text-accent">
-            {short} fewer than {note.id} lists. That will be recorded as a shortage
-            against the note, not written off.
+            {t.form.shortWarning(short, note.id)}
           </p>
         )}
         {invalid && (
           <p className="mt-4 rounded-lg bg-accent-soft px-3 py-2 text-sm text-accent">
-            Damaged cannot exceed what you counted in.
+            {t.form.invalid}
           </p>
         )}
 
@@ -86,13 +90,11 @@ export function ReceiptForm({ note }: { note: DeliveryNote }) {
           <SubmitButton
             className={btn.primary}
             disabled={invalid}
-            pendingLabel="Recording…"
+            pendingLabel={t.form.submitting}
           >
-            Record goods receipt
+            {t.form.submit}
           </SubmitButton>
-          <span className="text-xs text-faint">
-            Records the receipt. No stock or accounting entry is posted.
-          </span>
+          <span className="text-xs text-faint">{t.form.footnote}</span>
         </div>
       </form>
     </Card>

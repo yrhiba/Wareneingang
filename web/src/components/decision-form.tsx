@@ -4,8 +4,8 @@ import { useState } from "react";
 
 import { decideProposal } from "@/app/actions";
 import type { Cause, Proposal } from "@/lib/types";
-import { CAUSE_LABEL } from "@/lib/types";
 
+import { useT } from "./locale-provider";
 import { SubmitButton } from "./submit-button";
 import { btn } from "./ui";
 
@@ -21,6 +21,7 @@ export function DecisionForm({
   proposal: Proposal;
   alternatives: Cause[];
 }) {
+  const t = useT();
   const [correcting, setCorrecting] = useState(false);
 
   return (
@@ -29,12 +30,12 @@ export function DecisionForm({
 
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <label className="text-xs text-faint" htmlFor={`rev-${proposal.id}`}>
-          Reviewer
+          {t.decide.reviewer}
         </label>
         <input
           id={`rev-${proposal.id}`}
           name="reviewer"
-          defaultValue="Parts receiving lead"
+          defaultValue={t.decide.reviewerDefault}
           className="rounded-md border border-line bg-background px-2 py-1 text-xs"
         />
       </div>
@@ -42,8 +43,7 @@ export function DecisionForm({
       {correcting && (
         <div className="mb-4 rounded-lg border border-line bg-background p-3">
           <p className="mb-2 text-xs font-medium text-muted">
-            The system proposed <strong>{CAUSE_LABEL[proposal.cause]}</strong>. Record
-            the cause you judge correct:
+            {t.decide.correctLead(t.cause[proposal.cause])}
           </p>
           <div className="flex flex-wrap gap-2">
             {alternatives.map((c, i) => (
@@ -58,14 +58,14 @@ export function DecisionForm({
                   defaultChecked={i === 0}
                   className="sr-only"
                 />
-                {CAUSE_LABEL[c]}
+                {t.cause[c]}
               </label>
             ))}
           </div>
           <textarea
             name="note"
             rows={2}
-            placeholder="Why — e.g. supplier confirmed both notes were one dispatch"
+            placeholder={t.decide.notePlaceholder}
             className="mt-3 w-full rounded-md border border-line bg-surface px-2 py-1.5 text-sm outline-none focus:border-faint"
           />
         </div>
@@ -78,16 +78,16 @@ export function DecisionForm({
               name="decision"
               value="corrected"
               className={btn.primary}
-              pendingLabel="Recording correction…"
+              pendingLabel={t.decide.saving}
             >
-              Save correction
+              {t.decide.save}
             </SubmitButton>
             <button
               type="button"
               onClick={() => setCorrecting(false)}
               className={btn.secondary}
             >
-              Cancel
+              {t.decide.cancel}
             </button>
           </>
         ) : (
@@ -96,33 +96,30 @@ export function DecisionForm({
               name="decision"
               value="approved"
               className={btn.primary}
-              pendingLabel="Recording decision…"
+              pendingLabel={t.decide.approving}
             >
-              Approve proposal
+              {t.decide.approve}
             </SubmitButton>
             <button
               type="button"
               onClick={() => setCorrecting(true)}
               className={btn.secondary}
             >
-              Correct it
+              {t.decide.correct}
             </button>
             <SubmitButton
               name="decision"
               value="rejected"
               className={btn.danger}
-              pendingLabel="Recording…"
+              pendingLabel={t.decide.rejecting}
             >
-              Reject
+              {t.decide.reject}
             </SubmitButton>
           </>
         )}
       </div>
 
-      <p className="mt-3 text-xs text-faint">
-        Approving records the decision and the action to take. It does not send
-        anything to the supplier.
-      </p>
+      <p className="mt-3 text-xs text-faint">{t.decide.footnote}</p>
     </form>
   );
 }

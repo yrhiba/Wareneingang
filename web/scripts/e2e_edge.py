@@ -2,7 +2,7 @@
 # These drive the real app and the real database - they leave the demo
 # reset to "start of shift" when they finish.
 """Edge cases. Everything here is a thing a nervous presenter actually does."""
-import sys, importlib.util, re
+import sys, importlib.util, re, urllib.request, uuid
 spec = importlib.util.spec_from_file_location("h", __file__.replace("e2e_edge.py", "e2e.py"))
 sys.argv = ["x"]
 src = open(__file__.replace("e2e_edge.py", "e2e.py")).read()
@@ -85,7 +85,46 @@ st, url, body = post("/", find_form(get("/"), 'value="DN-1"'), {"received": "2",
 check("server rejects damaged > counted-in", st >= 400 or "cannot be negative or exceed" in body, f"status {st}")
 check("no receipt was written", "Recorded this shift" not in text(get("/")), text(get("/"))[:200])
 
-step("E10", "Leave the database ready for the demo")
+step("E10", "Arabic: the same records, the other language")
+BASE = ns["BASE"]
+
+def get_as(path, lang):
+    """The locale rides in a cookie, so a plain GET is the whole language test."""
+    req = urllib.request.Request(BASE + path, headers={"Cookie": f"c04-lang={lang}"})
+    return urllib.request.urlopen(req).read().decode()
+
+reset("invoice_arrived")
+ar_home, en_home = get_as("/", "ar"), get_as("/", "en")
+check("Arabic sets lang and dir on <html>", 'lang="ar"' in ar_home and 'dir="rtl"' in ar_home)
+check("English stays left-to-right", 'lang="en"' in en_home and 'dir="ltr"' in en_home)
+check("an unknown cookie falls back to English", 'lang="en"' in get_as("/", "zz"))
+
+ar_rev, en_rev = text(get_as("/review", "ar")), text(get_as("/review", "en"))
+# Proposals are stored once, in English, with the facts behind the sentence.
+# Both of these read the SAME rows - if only the English renders, the facts did
+# not survive the round trip through the database.
+check("Arabic review renders the stored proposals", "اقتراحان بانتظار القرار" in ar_rev, ar_rev[:200])
+check("English review renders the same rows", "2 proposals waiting" in en_rev, en_rev[:200])
+check("record ids are untranslated in both", "INV-1" in ar_rev and "INV-1" in en_rev)
+check("Arabic keeps the damage reading", "التلف البالغ 1 في RC-1" in ar_rev, ar_rev[:400])
+
+ar_ev = text(get_as("/evidence", "ar"))
+check("Arabic evidence keeps the three quantities apart",
+      all(x in ar_ev for x in ["المستلَم 10", "المقبول 9", "1 تالف"]), ar_ev[:400])
+
+b = uuid.uuid4().hex
+form = find_form(get("/review"), 'name="lang"')
+aid = re.search(r'name="(\$ACTION_ID_[^"]*)"', form).group(1)
+body = (f'--{b}\r\nContent-Disposition: form-data; name="{aid}"\r\n\r\n\r\n'
+        f'--{b}\r\nContent-Disposition: form-data; name="lang"\r\n\r\nar\r\n'
+        f"--{b}--\r\n").encode()
+req = urllib.request.Request(BASE + "/review", data=body, method="POST",
+      headers={"Content-Type": f"multipart/form-data; boundary={b}"})
+with urllib.request.urlopen(req) as r:
+    cookie = "; ".join(v for k, v in r.getheaders() if k.lower() == "set-cookie")
+check("the switch writes the locale cookie", "c04-lang=ar" in cookie, cookie[:120])
+
+step("E11", "Leave the database ready for the demo")
 reset("start_of_shift")
 t = text(get("/"))
 check("bay has both notes waiting", "2 delivery note s waiting" in t or "2 delivery notes waiting" in t, t[:300])

@@ -14,20 +14,25 @@ import {
   SimulatedTag,
 } from "@/components/ui";
 import { SubmitButton } from "@/components/submit-button";
+import { getLocale } from "@/lib/i18n/server";
+import { getDict } from "@/lib/i18n";
 import { loadCase } from "@/lib/queries";
-import { CAUSE_LABEL, type Cause } from "@/lib/types";
+import { renderDiscrepancy } from "@/lib/reconcile";
+import type { Cause, Proposal } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-const STATUS_COPY = {
-  approved: { label: "Approved", cls: "text-ok bg-ok-soft" },
-  corrected: { label: "Corrected by reviewer", cls: "text-accent bg-accent-soft" },
-  rejected: { label: "Rejected", cls: "text-muted bg-foreground/[0.06]" },
-  pending: { label: "Waiting for a decision", cls: "text-accent bg-accent-soft" },
+const STATUS_CLASS = {
+  approved: "text-ok bg-ok-soft",
+  corrected: "text-accent bg-accent-soft",
+  rejected: "text-muted bg-foreground/[0.06]",
+  pending: "text-accent bg-accent-soft",
 } as const;
 
 /** Screen 3 - the reviewer decides. Nothing else in the app settles a difference. */
 export default async function ReviewPage() {
+  const locale = await getLocale();
+  const t = getDict(locale);
   const {
     invoice,
     proposals,
@@ -42,6 +47,20 @@ export default async function ReviewPage() {
   const gap = invoice ? rec.invoicedNet - rec.accepted : 0;
   const byProposal = new Map(decisions.map((d) => [d.proposal_id, d]));
 
+  // A proposal is stored with the English sentence AND the facts behind it.
+  // Re-render from the facts where they are present, so a proposal raised in one
+  // language reads correctly in the other; fall back to the stored text.
+  const say = (p: Proposal) => {
+    const msg = p.proposed_state?.msg;
+    return msg
+      ? renderDiscrepancy(t, msg)
+      : {
+          statement: p.summary,
+          proposedAction: p.proposed_state?.action ?? "",
+          settledBy: p.proposed_state?.settled_by ?? "",
+        };
+  };
+
   // Differences the engine can see that have no proposal row yet - happens when
   // records were seeded straight into Postgres rather than through the app.
   const knownKeys = new Set(proposals.map((p) => p.kind));
@@ -50,25 +69,20 @@ export default async function ReviewPage() {
   return (
     <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
       <header className="mb-8">
-        <h1 className="text-xl font-semibold tracking-tight">Discrepancy review</h1>
-        <p className="mt-1.5 max-w-2xl text-sm text-muted">
-          The system raises a proposal with the evidence behind it and the cause it
-          thinks most likely. It does not decide. You approve, correct or reject,
-          and your answer becomes the record.
-        </p>
+        <h1 className="text-xl font-semibold tracking-tight">{t.review.title}</h1>
+        <p className="mt-1.5 max-w-2xl text-sm text-muted">{t.review.intro}</p>
       </header>
 
       {unraised.length > 0 && (
         <section className="mb-10">
-          <SectionTitle>
-            {unraised.length} difference{unraised.length > 1 ? "s" : ""} detected,
-            not yet raised
-          </SectionTitle>
+          <SectionTitle>{t.review.unraised(unraised.length)}</SectionTitle>
           <Card className="px-5 py-4">
             <ul className="mb-4 space-y-3">
               {unraised.map((d) => (
                 <li key={d.key}>
-                  <p className="text-sm font-medium">{d.statement}</p>
+                  <p className="text-sm font-medium">
+                    {renderDiscrepancy(t, d.msg).statement}
+                  </p>
                   <div className="mt-1.5">
                     <Evidence ids={d.evidence} />
                   </div>
@@ -76,31 +90,28 @@ export default async function ReviewPage() {
               ))}
             </ul>
             <form action={raiseProposals}>
-              <SubmitButton className={btn.primary} pendingLabel="Raising…">
-                Raise for review
+              <SubmitButton className={btn.primary} pendingLabel={t.review.raising}>
+                {t.review.raise}
               </SubmitButton>
             </form>
-            <p className="mt-2 text-xs text-faint">
-              These records were loaded outside the receiving flow, so no proposal
-              was raised automatically.
-            </p>
+            <p className="mt-2 text-xs text-faint">{t.review.unraisedNote}</p>
           </Card>
         </section>
       )}
 
       {pending.length === 0 && settled.length === 0 && unraised.length === 0 ? (
         <EmptyState
-          title="Nothing to review"
+          title={t.review.emptyTitle}
           body={
             receipts.length === 0
-              ? "Nothing has been counted in yet, so there is nothing to reconcile."
+              ? t.review.emptyNoReceipts
               : !invoice
-                ? "Goods are counted in and reconcile against the notes. The supplier's invoice has not arrived yet."
-                : "Every figure reconciles. What the supplier claims matches what went into stock."
+                ? t.review.emptyNoInvoice
+                : t.review.emptyReconciled
           }
           action={
             <Link href={receipts.length === 0 ? "/" : "/evidence"} className={btn.primary}>
-              {receipts.length === 0 ? "Go to the bay →" : "See the evidence →"}
+              {receipts.length === 0 ? t.review.toBay : t.review.toEvidence}
             </Link>
           }
         />
@@ -108,31 +119,30 @@ export default async function ReviewPage() {
 
       {pending.length > 0 && (
         <section className="mb-10">
-          <SectionTitle>
-            {pending.length} proposal{pending.length > 1 ? "s" : ""} waiting
-          </SectionTitle>
+          <SectionTitle>{t.review.pending(pending.length)}</SectionTitle>
           <div className="space-y-4">
             {pending.map((p) => {
               const alternatives = (p.proposed_state?.alternatives ??
                 [p.cause]) as Cause[];
+              const copy = say(p);
               return (
                 <Card key={p.id} className="overflow-hidden">
                   <div className="px-5 py-4">
                     <div className="mb-2 flex flex-wrap items-center gap-2">
                       <span
-                        className={`rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${STATUS_COPY.pending.cls}`}
+                        className={`rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${STATUS_CLASS.pending}`}
                       >
-                        {STATUS_COPY.pending.label}
+                        {t.review.status.pending}
                       </span>
-                      {p.is_simulated && <SimulatedTag>Proposed by the system</SimulatedTag>}
+                      {p.is_simulated && (
+                        <SimulatedTag>{t.review.proposedBy}</SimulatedTag>
+                      )}
                     </div>
 
-                    <p className="text-[15px] font-medium">{p.summary}</p>
+                    <p className="text-[15px] font-medium">{copy.statement}</p>
 
                     <div className="mt-3">
-                      <p className="mb-1.5 text-xs text-faint">
-                        Most likely cause, and what else stays open:
-                      </p>
+                      <p className="mb-1.5 text-xs text-faint">{t.review.causesLead}</p>
                       <div className="flex flex-wrap gap-1.5">
                         <CausePill cause={p.cause} leading />
                         {alternatives
@@ -146,17 +156,17 @@ export default async function ReviewPage() {
                       </div>
                     </div>
 
-                    {p.proposed_state?.settled_by && (
+                    {copy.settledBy && (
                       <p className="mt-3 rounded-lg bg-background px-3 py-2 text-sm text-muted">
-                        {String(p.proposed_state.settled_by)}
+                        {copy.settledBy}
                       </p>
                     )}
 
                     <div className="mt-3 rounded-lg border border-line px-3 py-2.5">
                       <p className="text-[11px] font-semibold uppercase tracking-wide text-faint">
-                        Proposed next action
+                        {t.review.nextAction}
                       </p>
-                      <p className="mt-1 text-sm">{p.proposed_state?.action}</p>
+                      <p className="mt-1 text-sm">{copy.proposedAction}</p>
                     </div>
 
                     <div className="mt-3">
@@ -174,43 +184,51 @@ export default async function ReviewPage() {
 
       {settled.length > 0 && (
         <section className="mb-8">
-          <SectionTitle>Decision history</SectionTitle>
+          <SectionTitle>{t.review.history}</SectionTitle>
           <Card className="divide-y divide-line">
             {settled.map((p) => {
               const d = byProposal.get(p.id);
-              const s = STATUS_COPY[p.status];
+              const copy = say(p);
+              // A rejected proposal records no action; anything else keeps the
+              // one that was proposed, re-stated in the current language.
+              const action =
+                p.status === "rejected" ? t.review.noAction : copy.proposedAction;
               return (
                 <div key={p.id} className="px-5 py-4">
                   <div className="flex flex-wrap items-center gap-2">
                     <span
-                      className={`rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${s.cls}`}
+                      className={`rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${
+                        STATUS_CLASS[p.status]
+                      }`}
                     >
-                      {s.label}
+                      {t.review.status[p.status]}
                     </span>
                     <span className="text-sm font-medium">
-                      Recorded as {CAUSE_LABEL[p.cause]}
+                      {t.review.recordedAs(t.cause[p.cause])}
                     </span>
                     {d && (
-                      <span className="ml-auto text-xs text-faint">
+                      <span className="ms-auto text-xs text-faint">
                         {d.reviewer} ·{" "}
-                        {new Date(d.decided_at).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                        {new Date(d.decided_at).toLocaleTimeString(
+                          // Morocco writes times with Latin digits in both
+                          // languages; only the am/pm marker changes.
+                          locale === "ar" ? "ar-MA" : "en-GB",
+                          { hour: "2-digit", minute: "2-digit" },
+                        )}
                       </span>
                     )}
                   </div>
-                  <p className="mt-1.5 text-sm text-muted">{p.summary}</p>
+                  <p className="mt-1.5 text-sm text-muted">{copy.statement}</p>
                   {d?.note && (
                     <p className="mt-1.5 text-sm italic text-muted">“{d.note}”</p>
                   )}
                   {d?.final_state?.action && (
                     <p className="mt-2 text-sm">
-                      <span className="text-faint">Action recorded: </span>
-                      {d.final_state.action}
+                      <span className="text-faint">{t.review.actionRecorded}</span>
+                      {action}
                       {p.status !== "rejected" && (
-                        <span className="ml-2">
-                          <SimulatedTag>Not sent</SimulatedTag>
+                        <span className="ms-2">
+                          <SimulatedTag>{t.review.notSent}</SimulatedTag>
                         </span>
                       )}
                     </p>

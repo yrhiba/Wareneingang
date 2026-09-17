@@ -1,8 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { isLocale, LOCALE_COOKIE } from "@/lib/i18n";
 import { createServerClient } from "@/lib/supabase/server";
 import { loadCase } from "@/lib/queries";
 import { INITIAL, type ResetMode } from "@/lib/seed-data";
@@ -23,6 +25,32 @@ import type { Cause } from "@/lib/types";
 
 function refresh() {
   revalidatePath("/", "layout");
+}
+
+// ---------------------------------------------------------------------------
+// Language
+// ---------------------------------------------------------------------------
+
+/**
+ * Switching language is a write like any other, so it goes through an action.
+ *
+ * The cookie is what the server reads to choose the dictionary and the text
+ * direction, which is why this cannot be client state: <html dir> has to be
+ * right in the first response, not corrected afterwards. No redirect is needed
+ * - Next re-renders the page the form was posted from.
+ */
+export async function setLanguage(formData: FormData) {
+  const lang = formData.get("lang");
+  if (!isLocale(lang)) return;
+
+  const store = await cookies();
+  store.set(LOCALE_COOKIE, lang, {
+    path: "/",
+    maxAge: 60 * 60 * 24 * 365,
+    sameSite: "lax",
+  });
+
+  refresh();
 }
 
 // ---------------------------------------------------------------------------
@@ -146,6 +174,9 @@ export async function syncProposals() {
         part: order.part,
         settled_by: d.settledBy,
         alternatives: d.candidates,
+        // The facts, not just the English sentence. A proposal outlives the
+        // request that raised it and may be reviewed in the other language.
+        msg: d.msg,
       },
       status: "pending" as const,
       is_simulated: true,

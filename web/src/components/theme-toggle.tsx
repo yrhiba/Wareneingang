@@ -2,6 +2,8 @@
 
 import { useSyncExternalStore } from "react";
 
+import { useT } from "./locale-provider";
+
 const KEY = "c04-theme";
 
 /**
@@ -32,6 +34,7 @@ const getSnapshot = () =>
 const getServerSnapshot = () => "light" as const;
 
 export function ThemeToggle() {
+  const t = useT();
   const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const dark = theme === "dark";
 
@@ -52,8 +55,8 @@ export function ThemeToggle() {
       type="button"
       onClick={toggle}
       aria-pressed={dark}
-      aria-label={dark ? "Switch to light theme" : "Switch to dark theme"}
-      title={dark ? "Switch to light" : "Switch to dark"}
+      aria-label={dark ? t.chrome.toLight : t.chrome.toDark}
+      title={dark ? t.chrome.toLight : t.chrome.toDark}
       className="flex size-7 items-center justify-center rounded-lg border border-line text-xs text-muted transition hover:border-faint hover:text-foreground"
     >
       <span aria-hidden>{dark ? "☀" : "☾"}</span>

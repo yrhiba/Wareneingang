@@ -71,3 +71,39 @@ body {
 .qty-input {
   font-variant-numeric: tabular-nums;
 }
+
+/* --------------------------------------------------------------------------
+   Arabic / right-to-left
+   -------------------------------------------------------------------------- */
+
+:root[dir="rtl"] body {
+  font-family: var(--font-arabic), var(--font-geist-sans), ui-sans-serif,
+    system-ui, sans-serif;
+}
+
+/*
+ * Arabic is cursive: letters join, and letter-spacing pulls them apart into
+ * something close to unreadable. Several labels here are tracked for the Latin
+ * uppercase look, so the whole subtree is reset rather than each utility.
+ * Specificity (0,2,1) beats a Tailwind tracking-* class on its own.
+ */
+:root[dir="rtl"] body,
+:root[dir="rtl"] body * {
+  letter-spacing: normal;
+}
+
+/*
+ * Record ids stay left-to-right inside Arabic sentences. Without isolation the
+ * bidi algorithm reorders runs like "DN-1 -> RC-1" or "-1 credited", which is
+ * exactly the evidence a reader is trying to follow.
+ */
+:root[dir="rtl"] [class~="font-mono"] {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+/* The numeric columns are pure figures; keep them reading as figures. */
+:root[dir="rtl"] .qty-input {
+  direction: ltr;
+  text-align: start;
+}

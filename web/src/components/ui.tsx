@@ -1,7 +1,10 @@
+"use client";
+
 import type { ReactNode } from "react";
 
 import type { Cause, Confidence } from "@/lib/types";
-import { CAUSE_LABEL } from "@/lib/types";
+
+import { useT } from "./locale-provider";
 
 export function Card({
   children,
@@ -28,11 +31,12 @@ export function SectionTitle({ children }: { children: ReactNode }) {
 }
 
 /** Purple means simulated, everywhere, without exception. */
-export function SimulatedTag({ children = "Simulated" }: { children?: ReactNode }) {
+export function SimulatedTag({ children }: { children?: ReactNode }) {
+  const t = useT();
   return (
     <span className="inline-flex items-center gap-1 rounded-full bg-sim-soft px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-sim">
       <span aria-hidden>◆</span>
-      {children}
+      {children ?? t.ui.simulated}
     </span>
   );
 }
@@ -44,6 +48,7 @@ export function CausePill({
   cause: Cause;
   leading?: boolean;
 }) {
+  const t = useT();
   return (
     <span
       className={`rounded-full border px-2.5 py-1 text-xs ${
@@ -52,31 +57,32 @@ export function CausePill({
           : "border-line text-muted"
       }`}
     >
-      {CAUSE_LABEL[cause]}
+      {t.cause[cause]}
     </span>
   );
 }
 
-const CONFIDENCE_COPY: Record<Confidence, string> = {
-  likely: "Likely — one record accounts for it exactly",
-  possible: "Possible — consistent, but not the only reading",
-  uncertain: "Uncertain — the records cannot rank the causes",
-};
-
 export function ConfidenceNote({ confidence }: { confidence: Confidence }) {
-  return <p className="text-xs font-medium text-muted">{CONFIDENCE_COPY[confidence]}</p>;
+  const t = useT();
+  return (
+    <p className="text-xs font-medium text-muted">{t.confidence[confidence]}</p>
+  );
 }
 
 export function Evidence({ ids }: { ids: string[] }) {
+  const t = useT();
   return (
-    <p className="font-mono text-xs text-faint">
-      Evidence:{" "}
-      {ids.map((id, i) => (
-        <span key={`${id}-${i}`}>
-          {i > 0 && " · "}
-          <span className="text-muted">{id}</span>
-        </span>
-      ))}
+    <p className="text-xs text-faint">
+      {t.ui.evidence}{" "}
+      {/* The ids are one left-to-right run even in Arabic; see globals.css. */}
+      <span className="font-mono">
+        {ids.map((id, i) => (
+          <span key={`${id}-${i}`}>
+            {i > 0 && " · "}
+            <span className="text-muted">{id}</span>
+          </span>
+        ))}
+      </span>
     </p>
   );
 }
