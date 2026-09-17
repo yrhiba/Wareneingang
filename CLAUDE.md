@@ -31,17 +31,18 @@ cd web && npx tsc --noEmit # typecheck
 
 **Reset to the start state:** re-run `supabase/seed.sql` in the Supabase SQL editor. It truncates and reloads the records from `initial.json` verbatim.
 
-`npm run e2e` drives both suites over real HTTP (dev server must be running); step E10 covers Arabic and the message round-trip through the database.
+`npm run e2e` drives both suites over real HTTP (dev server must be running); step E10 covers Arabic and the message round-trip through the database, E11 the settings screen.
 
 `web/.env.local` holds the three keys (URL, publishable, secret) and is gitignored; `web/.env.example` documents the shape.
 
 ## Architecture
 
-Three screens, in the order the work happens: `/` goods receipt → `/evidence` the chain → `/review` the decision.
+Three screens, in the order the work happens: `/` goods receipt → `/evidence` the chain → `/review` the decision. `/docs` and `/settings` sit off the flow.
 
 - `supabase/schema.sql` — 8 tables. `receipts` carries a check constraint `accepted = received - damaged` so the three quantities cannot be collapsed at the DB level (verified: a bad write returns `23514`). `delivery_notes.duplicate_of` makes a merged scan an explicit, reviewable row. `credit_notes` lets a supplier correction arrive as its own record rather than as an edit to `INV-1`. Additive migrations live in `supabase/migrations/`.
 - `src/lib/reconcile.ts` — pure domain logic, no database. Ranks a leading cause with a confidence but never settles one: it emits `likely`, the open `candidates`, the `evidence` ids, a `proposedAction` and what would settle it. **Propose, don't decide.** Each discrepancy also carries `msg`, the facts behind its sentence, so the same gap can be re-worded in either language; `renderDiscrepancy(dict, msg)` does that. The English prose it returns is what gets persisted with a proposal.
 - `src/lib/i18n/` — `en.ts` is the source dictionary and `ar.ts` is typed `Dict` against it, so an untranslated key fails the typecheck. The locale is a cookie (`c04-lang`) read on the server by `i18n/server.ts`, which is what lets `<html lang dir>` be correct in the first response and keeps the switch working without JavaScript. Client components read it through `LocaleProvider` / `useT()`. `/docs` stays English and LTR on purpose.
+- `src/lib/case-config/` — the case parameters `/settings` exposes (part, ordered, listed, counted, damaged, invoiced) and `buildRecords()`, which turns them back into rows. Ids and structure are fixed; only quantities and the part name move. Prototype scaffolding and labelled as such on the page, in `/docs` and in the top banner. The config lives in a cookie (`c04-case`) read by `case-config/server.ts`, so it needs no migration and the cookie-less e2e suites always run against `initial.json`. Applying rebuilds the case, because proposals raised against the old numbers answer a question that no longer exists.
 - `src/lib/seed-data.ts` — the supplied records the app reseeds from. `npm run check:seed` asserts it still matches `initial.json` field for field; run it before touching anything near the data.
 - `src/app/actions.ts` — **every write in the app.** Nothing else can change state.
 - `src/lib/supabase/client.ts` (browser, publishable key) and `server.ts` (secret key, `server-only`).

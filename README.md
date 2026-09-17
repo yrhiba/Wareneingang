@@ -44,12 +44,24 @@ npm run dev                    # http://localhost:3000
 | `/evidence` | **2. Evidence** — the chain from order to invoice, with the figures |
 | `/review` | **3. Review** — the proposal, its evidence, and approve / correct / reject |
 | `/docs` | Presenter briefing — demo script, roles, real vs simulated |
+| `/settings` | Case settings — the quantities the demo reconciles. Prototype scaffolding, labelled as such |
 
 **Language:** the header switches the whole prototype between **English** and
 **العربية**, right-to-left included. The choice is a cookie the server reads, so
 the correct language and text direction are in the first response — no flash, and
 the switch still works with JavaScript off. `/docs` stays English on purpose: it
 is the presenter's own notes, and it says so when you are reading in Arabic.
+
+**Changing the numbers:** nothing in the app hardcodes *10 × FILTER-X*. Every
+quantity is a row the engine reads, so `/settings` can change the ordered,
+listed, counted, damaged and invoiced figures and the part name, and rebuild the
+case from them — which is the quickest way to show the reconciliation is doing
+arithmetic on records rather than replaying a script. It is prototype
+scaffolding, not a feature: a shipped system takes a purchase order quantity
+from the ERP and a listed quantity off the supplier's note, and a receiving clerk
+may retype neither. `initial.json` is never edited; a change lives in a cookie,
+the top banner says so while one is set, and **Restore** puts the supplied
+records back.
 
 **Repeatable start state:** two reset buttons at the bottom of every screen
 rebuild the database from the supplied records in one click — *start of shift*
@@ -85,6 +97,7 @@ load. The secret key must never take a `NEXT_PUBLIC_` prefix.
 | Human review | **Real** | Approve / correct / reject writes a `review_decisions` row; a correction overrides the proposed cause. |
 | "No write without review" | **Real, enforced** | RLS grants the browser key select only. A write from it fails with `42501` — verified, not assumed. |
 | Event trigger | **Simulated, labelled** | Two buttons inject the invoice and the credit note. Marked purple and tagged *Simulated* everywhere they appear. |
+| Case settings | **Real, scaffolding** | `/settings` writes real rows through the same server action path. Labelled prototype-only on the page; the change is a cookie, not an edit to `initial.json`, and the banner marks it. |
 | Scanned-document input | **Simulated** | No OCR. Delivery notes and invoices are structured rows, as the exercise permits. |
 | External action | **None, by design** | No supplier message, stock update or accounting entry. Approved actions are recorded and labelled *Not sent*. |
 
@@ -117,7 +130,10 @@ This is a product choice, not a technical limit.
 - Row-level security is demo-open: anyone with the URL can read. Deliberate
   shortcut for the exercise, **not a production posture**.
 - No authentication, so "who approved this" is a text field, not an identity.
-- The demo reset buttons are available to anyone with the URL.
+- The demo reset buttons and `/settings` are available to anyone with the URL.
+- `/settings` changes quantities, not structure: `DN-1` and `DN-2` are the notes
+  the case ships with, and it cannot add a third or drop one. It validates
+  against the database's constraints, never against a real purchase order.
 - The candidate causes are the four the client named, hand-written. A real
   receiving bay will have more.
 - The demo page reads live from Supabase; without network it will not load.
@@ -149,6 +165,7 @@ supabase/
   migrations/       additive migrations for a database that already has data
 web/                Next.js 16 app (App Router, TypeScript, Tailwind v4)
   src/lib/i18n/          en.ts and ar.ts — ar is typed against en, so it cannot fall behind
+  src/lib/case-config/   the tunable case parameters and how they turn back into records
   src/lib/reconcile.ts   pure domain logic, no database
   src/lib/queries.ts     loads an order and everything referencing it
   src/lib/seed-data.ts   the supplied records, guarded by npm run check:seed
@@ -158,6 +175,7 @@ web/                Next.js 16 app (App Router, TypeScript, Tailwind v4)
   src/app/evidence/      2. the chain
   src/app/review/        3. proposal and decision
   src/app/docs/          the presenter briefing
+  src/app/settings/      the case parameters, off the numbered flow
 ```
 
 Two constraints live in the database rather than in convention, because they are

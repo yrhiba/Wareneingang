@@ -190,6 +190,15 @@ export default async function DocsPage() {
             the other. Record ids, quantities and typed notes are never translated.
             This briefing stays English.
           </Feature>
+          <Feature status="built" name="Case settings, as scaffolding">
+            <Mono>/settings</Mono> edits the ordered, listed, counted, damaged and
+            invoiced quantities and the part name, then rebuilds the case from them.
+            It exists to answer “does this only work for 10 FILTER-X?” — the engine
+            reads those numbers from Postgres, so changing them re-ranks the cause.
+            It is labelled prototype-only on the page, the change lives in a cookie
+            rather than in <Mono>initial.json</Mono>, and the top banner says so
+            until it is restored. A shipped system takes these from the ERP.
+          </Feature>
           <Feature status="built" name="No write without review, enforced">
             The browser key can read and nothing else; a write from it fails with
             Postgres <Mono>42501</Mono>. Every state change goes through a server

@@ -3,6 +3,8 @@ import { Geist, Geist_Mono, IBM_Plex_Sans_Arabic } from "next/font/google";
 
 import { LocaleProvider } from "@/components/locale-provider";
 import { Nav } from "@/components/nav";
+import { isSupplied } from "@/lib/case-config";
+import { getCaseConfig } from "@/lib/case-config/server";
 import { getDict } from "@/lib/i18n";
 import { getLocale } from "@/lib/i18n/server";
 
@@ -27,6 +29,9 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const locale = await getLocale();
   const t = getDict(locale);
+  // The exercise forbids passing changed records off as the supplied ones, so
+  // the banner that labels the data as synthetic also labels it as edited.
+  const modified = !isSupplied(await getCaseConfig());
 
   return (
     <html
@@ -54,6 +59,11 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           {/* Never off-screen: the exercise requires synthetic data to be labelled. */}
           <p className="bg-foreground px-4 py-1.5 text-center text-[11px] font-medium uppercase tracking-[0.08em] text-background">
             {t.chrome.banner}
+            {modified && (
+              <span className="ms-2 rounded-full bg-background/25 px-2 py-0.5">
+                {t.chrome.bannerModified}
+              </span>
+            )}
           </p>
           <Nav />
           <div className="flex-1">{children}</div>

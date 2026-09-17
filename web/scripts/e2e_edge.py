@@ -2,7 +2,7 @@
 # These drive the real app and the real database - they leave the demo
 # reset to "start of shift" when they finish.
 """Edge cases. Everything here is a thing a nervous presenter actually does."""
-import sys, importlib.util, re, urllib.request, uuid
+import sys, importlib.util, re, urllib.request, urllib.error, http.cookiejar, uuid
 spec = importlib.util.spec_from_file_location("h", __file__.replace("e2e_edge.py", "e2e.py"))
 sys.argv = ["x"]
 src = open(__file__.replace("e2e_edge.py", "e2e.py")).read()
@@ -10,6 +10,7 @@ src = src[:src.index("# =============================== the demo script")]
 ns = {}
 exec(compile(src, "harness", "exec"), ns)
 get, text, find_form, post, check, step = (ns[k] for k in ("get","text","find_form","post","check","step"))
+fields = ns["fields"]
 FAIL = ns["FAIL"]
 
 def reset(mode):
@@ -124,7 +125,62 @@ with urllib.request.urlopen(req) as r:
     cookie = "; ".join(v for k, v in r.getheaders() if k.lower() == "set-cookie")
 check("the switch writes the locale cookie", "c04-lang=ar" in cookie, cookie[:120])
 
-step("E11", "Leave the database ready for the demo")
+step("E11", "Settings: the numbers are records, not constants")
+# A cookie jar, because the config rides in one. Everything else in these
+# suites is deliberately cookie-less, which is why they always run against
+# initial.json no matter what a browser has set.
+_jar = http.cookiejar.CookieJar()
+_op = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(_jar))
+
+def cget(path):
+    with _op.open(BASE + path) as r:
+        return r.read().decode()
+
+def cpost(path, form, over=None):
+    data = fields(form)
+    data.update(over or {})
+    b = uuid.uuid4().hex
+    body = b"".join(
+        f'--{b}\r\nContent-Disposition: form-data; name="{k}"\r\n\r\n{v}\r\n'.encode()
+        for k, v in data.items()) + f"--{b}--\r\n".encode()
+    req = urllib.request.Request(BASE + path, data=body, method="POST",
+          headers={"Content-Type": f"multipart/form-data; boundary={b}"})
+    try:
+        with _op.open(req) as r:
+            return r.status, r.geturl(), r.read().decode()
+    except urllib.error.HTTPError as e:
+        return e.code, BASE + path, e.read().decode()
+
+CHANGED = {"part": "PUMP-SEAL-7", "ordered": "24", "invoiced": "24",
+           "listed:DN-1": "20", "counted:DN-1": "18", "damaged:DN-1": "2",
+           "listed:DN-2": "4", "counted:DN-2": "4", "damaged:DN-2": "0",
+           "mode": "invoice_arrived"}
+st, url, _ = cpost("/settings", find_form(cget("/settings"), 'name="ordered"'), CHANGED)
+check("applying a changed case returns 200", st == 200, f"status {st}")
+
+t = text(cget("/evidence"))
+check("every figure follows the config",
+      all(x in t for x in ["Ordered 24", "Listed 24", "Counted in 22", "Accepted 20", "Invoiced 24"]),
+      t[t.find("Ordered"):][:200])
+check("the part name is not hardcoded", "PUMP-SEAL-7" in t and "FILTER-X" not in t, t[:200])
+# 2 damaged no longer accounts for a gap of 4, so the engine must stop
+# proposing damage - proof it is reconciling rather than replaying.
+r = text(cget("/review"))
+check("the engine re-reasons on the new numbers",
+      "claims 24 but 20 were accepted" in r, r[r.find("INV-1"):][:200])
+check("and drops to uncertain", "cannot rank the causes" in r, r[:300])
+check("the banner says the data was changed", "Numbers changed in Settings" in text(cget("/")))
+
+st, _, body = cpost("/settings", find_form(cget("/settings"), 'name="ordered"'),
+                    {**CHANGED, "counted:DN-1": "2", "damaged:DN-1": "5"})
+check("damaged > counted is refused", st >= 400 or "cannot exceed" in body, f"status {st}")
+
+cpost("/settings", find_form(cget("/settings"), "Restore"))
+t = text(cget("/"))
+check("restore brings back the supplied records", "FILTER-X" in t and "PUMP-SEAL" not in t, t[:300])
+check("and clears the changed marker", "Numbers changed in Settings" not in t, t[:200])
+
+step("E12", "Leave the database ready for the demo")
 reset("start_of_shift")
 t = text(get("/"))
 check("bay has both notes waiting", "2 delivery note s waiting" in t or "2 delivery notes waiting" in t, t[:300])

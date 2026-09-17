@@ -61,6 +61,12 @@ export function Nav() {
           >
             {t.chrome.briefing}
           </Link>
+          <Link
+            href="/settings"
+            className="text-xs text-faint underline-offset-4 hover:underline"
+          >
+            {t.chrome.settings}
+          </Link>
           <LanguageToggle />
           <ThemeToggle />
         </div>

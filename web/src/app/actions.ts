@@ -4,10 +4,20 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import {
+  buildRecords,
+  CONFIG_COOKIE,
+  isSupplied,
+  MAX_PART,
+  MAX_QTY,
+  SUPPLIED,
+  type CaseConfig,
+} from "@/lib/case-config";
+import { getCaseConfig } from "@/lib/case-config/server";
 import { isLocale, LOCALE_COOKIE } from "@/lib/i18n";
 import { createServerClient } from "@/lib/supabase/server";
 import { loadCase } from "@/lib/queries";
-import { INITIAL, type ResetMode } from "@/lib/seed-data";
+import { type ResetMode } from "@/lib/seed-data";
 import type { Cause } from "@/lib/types";
 
 /**
@@ -57,47 +67,149 @@ export async function setLanguage(formData: FormData) {
 // Start state
 // ---------------------------------------------------------------------------
 
-export async function resetDemo(formData: FormData) {
-  const mode = (formData.get("mode") as ResetMode) ?? "start_of_shift";
-  const db = createServerClient();
+// Children before parents, or the foreign keys refuse the delete.
+//
+// PostgREST needs a filter on a DELETE, and it must be one every row matches.
+// Comparing an id is not safe here: proposals and review_decisions key on
+// uuid (so a text sentinel fails to cast) and invoice_lines has no id column
+// at all. So each table names a NOT NULL column and we filter on "is not
+// null", which is type-agnostic and always true.
+const CLEAR_ORDER: [table: string, notNullColumn: string][] = [
+  ["review_decisions", "decided_at"],
+  ["proposals", "created_at"],
+  ["credit_notes", "created_at"],
+  ["invoice_lines", "invoice_id"],
+  ["invoices", "created_at"],
+  ["receipts", "created_at"],
+  ["delivery_notes", "created_at"],
+  ["orders", "created_at"],
+];
 
-  // Children before parents, or the foreign keys refuse the delete.
-  //
-  // PostgREST needs a filter on a DELETE, and it must be one every row matches.
-  // Comparing an id is not safe here: proposals and review_decisions key on
-  // uuid (so a text sentinel fails to cast) and invoice_lines has no id column
-  // at all. So each table names a NOT NULL column and we filter on "is not
-  // null", which is type-agnostic and always true.
-  const CLEAR_ORDER: [table: string, notNullColumn: string][] = [
-    ["review_decisions", "decided_at"],
-    ["proposals", "created_at"],
-    ["credit_notes", "created_at"],
-    ["invoice_lines", "invoice_id"],
-    ["invoices", "created_at"],
-    ["receipts", "created_at"],
-    ["delivery_notes", "created_at"],
-    ["orders", "created_at"],
-  ];
+type Db = ReturnType<typeof createServerClient>;
 
+async function clearCase(db: Db) {
   for (const [table, col] of CLEAR_ORDER) {
     const { error } = await db.from(table).delete().not(col, "is", null);
     if (error) throw new Error(`${table}: ${error.message}`);
   }
+}
 
-  await db.from("orders").insert(INITIAL.order).throwOnError();
-  await db.from("delivery_notes").insert([...INITIAL.notes]).throwOnError();
+/**
+ * Rebuilds the case from a config.
+ *
+ * With no config cookie set that is `initial.json` verbatim, which is what the
+ * reset buttons and the end-to-end suites get. The settings screen can hand a
+ * changed one in; the records it produces keep the same ids and the same
+ * shape, so every screen still reads the same chain.
+ */
+async function seedCase(db: Db, config: CaseConfig, mode: ResetMode) {
+  const records = buildRecords(config);
+
+  await db.from("orders").insert(records.order).throwOnError();
+  await db.from("delivery_notes").insert(records.notes).throwOnError();
 
   if (mode === "invoice_arrived") {
-    // The full supplied state, exactly as initial.json.
-    await db.from("receipts").insert([...INITIAL.receipts]).throwOnError();
-    await db.from("invoices").insert(INITIAL.invoice).throwOnError();
-    await db.from("invoice_lines").insert([...INITIAL.invoiceLines]).throwOnError();
+    await db.from("receipts").insert(records.receipts).throwOnError();
+    await db.from("invoices").insert(records.invoice).throwOnError();
+    await db.from("invoice_lines").insert(records.invoiceLines).throwOnError();
     await syncProposals();
   }
   // start_of_shift: notes are at the bay, nothing counted in, no invoice yet.
+}
+
+export async function resetDemo(formData: FormData) {
+  const mode = (formData.get("mode") as ResetMode) ?? "start_of_shift";
+  const db = createServerClient();
+
+  await clearCase(db);
+  await seedCase(db, await getCaseConfig(), mode);
 
   refresh();
   redirect(mode === "invoice_arrived" ? "/review" : "/");
+}
+
+// ---------------------------------------------------------------------------
+// Case configuration - prototype scaffolding, labelled everywhere it shows
+// ---------------------------------------------------------------------------
+
+function readQty(formData: FormData, field: string, label: string): number {
+  const n = Number(formData.get(field) ?? NaN);
+  if (!Number.isInteger(n) || n < 0 || n > MAX_QTY)
+    throw new Error(`${label} must be a whole number between 0 and ${MAX_QTY}.`);
+  return n;
+}
+
+/**
+ * Applies a changed case and rebuilds from it.
+ *
+ * The config is kept in a cookie rather than a table: it is presenter
+ * scaffolding, so it needs no migration to work and it cannot leave a shared
+ * database in a state a later demo inherits by surprise. The records it
+ * produces are written to Postgres like any other - nothing reads the cookie
+ * except the reset path and this screen.
+ *
+ * Applying rebuilds the case, because the numbers are what the engine
+ * reconciles: counts and proposals raised against the old ones would be
+ * answering a question that no longer exists.
+ */
+export async function saveCaseConfig(formData: FormData) {
+  const mode = (formData.get("mode") as ResetMode) ?? "start_of_shift";
+
+  const part = String(formData.get("part") ?? "").trim().slice(0, MAX_PART);
+  if (!part) throw new Error("Part needs a name.");
+
+  const config: CaseConfig = {
+    part,
+    ordered: readQty(formData, "ordered", "Ordered quantity"),
+    invoiced: readQty(formData, "invoiced", "Invoiced quantity"),
+    notes: SUPPLIED.notes.map((n) => {
+      const counted = readQty(formData, `counted:${n.id}`, `Counted in on ${n.id}`);
+      const damaged = readQty(formData, `damaged:${n.id}`, `Damaged on ${n.id}`);
+      // Mirrors the receipts check constraint, so a bad number is a readable
+      // message here rather than a 23514 from Postgres.
+      if (damaged > counted)
+        throw new Error(`Damaged on ${n.id} cannot exceed what was counted in.`);
+      return {
+        id: n.id,
+        listed: readQty(formData, `listed:${n.id}`, `Listed on ${n.id}`),
+        counted,
+        damaged,
+      };
+    }),
+  };
+
+  const store = await cookies();
+  if (isSupplied(config)) {
+    // Typed back to the supplied numbers: drop the cookie rather than keep one
+    // that says nothing, so the "changed" marker clears itself.
+    store.delete({ name: CONFIG_COOKIE, path: "/" });
+  } else {
+    store.set(CONFIG_COOKIE, JSON.stringify(config), {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+      sameSite: "lax",
+    });
+  }
+
+  const db = createServerClient();
+  await clearCase(db);
+  await seedCase(db, config, mode);
+
+  refresh();
+  redirect(mode === "invoice_arrived" ? "/review" : "/");
+}
+
+/** Back to `initial.json`, records and marker both. */
+export async function restoreSupplied() {
+  const store = await cookies();
+  store.delete({ name: CONFIG_COOKIE, path: "/" });
+
+  const db = createServerClient();
+  await clearCase(db);
+  await seedCase(db, SUPPLIED, "start_of_shift");
+
+  refresh();
+  redirect("/");
 }
 
 // ---------------------------------------------------------------------------
@@ -261,10 +373,12 @@ export async function simulateEvent(formData: FormData) {
   const db = createServerClient();
 
   if (kind === "invoice_arrives") {
-    // The supplier's invoice turns up weeks after the goods. Same record as
-    // initial.json - the simulation controls only WHEN it appears, not what it says.
-    await db.from("invoices").upsert(INITIAL.invoice).throwOnError();
-    await db.from("invoice_lines").upsert([...INITIAL.invoiceLines]).throwOnError();
+    // The supplier's invoice turns up weeks after the goods. Same record the
+    // reset seeds - the simulation controls only WHEN it appears, not what it
+    // says, so it is built from the active config rather than from a literal.
+    const records = buildRecords(await getCaseConfig());
+    await db.from("invoices").upsert(records.invoice).throwOnError();
+    await db.from("invoice_lines").upsert(records.invoiceLines).throwOnError();
   } else if (kind === "credit_note") {
     // Changed information: the supplier accepts the damaged unit and credits it.
     // A new record, labelled simulated. INV-1 is never edited.

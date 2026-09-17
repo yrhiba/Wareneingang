@@ -20,9 +20,13 @@ export const en = {
       "What to record at receipt so the next person can resolve the difference.",
     banner:
       "Synthetic exercise data · Trast-style goods receipt · not a real supplier",
+    // Shown next to the banner whenever the numbers differ from initial.json,
+    // so nobody presents changed figures believing they are the supplied ones.
+    bannerModified: "Numbers changed in Settings",
     brand: "Goods receipt",
     flow: "Receiving flow",
     briefing: "Briefing",
+    settings: "Settings",
     briefingNote:
       "The briefing is the presenter's own notes and is kept in English. The prototype itself runs in both languages.",
     steps: {
@@ -211,6 +215,69 @@ export const en = {
     resetting: "Resetting…",
     creditReason: (n: number) =>
       `Supplier credit for ${n} damaged unit(s) reported at receipt.`,
+  },
+
+  settings: {
+    title: "Case settings",
+    tag: "Prototype only",
+    intro:
+      "The prototype reads every quantity from the database, so none of them are written into the code. This screen edits them, which is the quickest way to show the reconciliation is doing arithmetic on records rather than replaying a script.",
+    notAFeature:
+      "A shipped system would not have this screen. A purchase order quantity comes from the ERP, a listed quantity comes off the supplier's note, and a receiving clerk may not retype either. It exists so the demo can answer \"does this only work for 10 FILTER-X?\".",
+    suppliedSafe:
+      "initial.json is never edited. Changes live in a cookie in this browser, the banner says so while one is set, and Restore puts the supplied records back.",
+
+    orderHeading: "Purchase order",
+    part: "Part",
+    partHint: "Named in every generated sentence",
+    ordered: "Ordered",
+    orderedHint: "What PO-1 asked the supplier for",
+
+    invoiceHeading: "Supplier invoice",
+    invoiced: "Invoiced",
+    invoicedHint: "What INV-1 bills for, before any credit note",
+
+    notesHeading: "Delivery notes",
+    notesIntro:
+      "Listed is what the note claims. Counted in and damaged are what the receipt says - the presets use them, and at the bay the clerk types them instead.",
+    listed: "Listed",
+    counted: "Counted in",
+    damagedLabel: "Damaged",
+    acceptedLabel: "Accepted",
+    derived: "Derived",
+
+    previewHeading: "What the engine will see",
+    previewOrdered: "Ordered",
+    previewListed: "Listed",
+    previewCounted: "Counted in",
+    previewAccepted: "Accepted",
+    previewInvoiced: "Invoiced",
+    gapNone: "Invoice and accepted stock agree — no difference to raise.",
+    gapSome: (n: number) =>
+      `Invoiced ${n > 0 ? "exceeds" : "falls short of"} accepted by ${Math.abs(n)}: a difference the reviewer has to settle.`,
+    previewNote:
+      "Counted in and damaged only apply to the invoice-arrived preset. Start of shift leaves the bay empty so you can count the goods in yourself.",
+
+    invalid: (noteId: string) =>
+      `Damaged on ${noteId} cannot exceed what was counted in.`,
+    changed: "changed",
+    suppliedValue: (v: string | number) => `was ${v}`,
+
+    applyShift: "Apply — start of shift",
+    applyInvoice: "Apply — invoice arrived",
+    applying: "Rebuilding…",
+    applyNote:
+      "Applying rebuilds the case from these numbers. Counts and proposals from the old ones are cleared, because they answer a question that no longer exists.",
+    restore: "Restore the supplied records",
+    restoring: "Restoring…",
+    restoreHint: "Back to initial.json, and the banner marker clears.",
+
+    limitsHeading: "What this screen does not do",
+    limits: [
+      "The note ids are fixed. You can change what DN-1 and DN-2 say, not add a third or drop one — that is a records change, not a setting.",
+      "The change is a cookie in this browser. Another browser pointed at the same database sees the same records but resets to the supplied numbers.",
+      "Nothing here is validated against a real purchase order. The values are accepted as typed, within the database's own constraints.",
+    ],
   },
 
   error: {
