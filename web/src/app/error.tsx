@@ -26,14 +26,14 @@ export default function Error({
 
   return (
     <main className="mx-auto max-w-xl px-4 py-20 sm:px-6">
-      <div className="rounded-xl border border-line bg-surface px-6 py-10 text-center">
+      <div className="border border-line bg-surface px-6 py-10 text-center">
         <p className="text-base font-medium">{t.error.title}</p>
         <p className="mx-auto mt-2 max-w-md text-sm text-muted">{t.error.body}</p>
 
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={reset}
-            className="inline-flex items-center justify-center rounded-lg bg-foreground px-4 py-2.5 text-sm font-semibold text-background transition hover:opacity-85"
+            className="lc inline-flex items-center justify-center rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-brand-ink transition hover:opacity-90"
           >
             {t.error.retry}
           </button>
@@ -42,7 +42,7 @@ export default function Error({
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a
             href="/"
-            className="inline-flex items-center justify-center rounded-lg border border-line bg-surface px-4 py-2.5 text-sm font-medium transition hover:border-faint"
+            className="lc inline-flex items-center justify-center rounded-full border border-brand/45 px-5 py-2.5 text-sm font-semibold text-brand transition hover:border-brand hover:bg-brand-soft"
           >
             {t.error.home}
           </a>
@@ -52,7 +52,7 @@ export default function Error({
           <summary className="cursor-pointer text-xs text-faint">
             {t.error.detail}
           </summary>
-          <pre className="mt-2 overflow-x-auto rounded-lg bg-background p-3 font-mono text-[11px] text-muted">
+          <pre className="mt-2 overflow-x-auto bg-background p-3 font-mono text-[11px] text-muted">
             {error.message}
             {error.digest ? `\n\ndigest: ${error.digest}` : ""}
           </pre>

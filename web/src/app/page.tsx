@@ -2,7 +2,8 @@ import Link from "next/link";
 
 import { DemoBar } from "@/components/demo-bar";
 import { ReceiptForm } from "@/components/receipt-form";
-import { btn, Card, EmptyState, SectionTitle, SimulatedTag } from "@/components/ui";
+import { btn } from "@/components/button-styles";
+import { Card, EmptyState, SectionTitle, SimulatedTag } from "@/components/ui";
 import { getT } from "@/lib/i18n/server";
 import { loadCase } from "@/lib/queries";
 
@@ -61,7 +62,7 @@ export default async function ReceivePage() {
                   {t.receive.against}{" "}
                   <span className="font-mono">{r.delivery_note}</span>
                 </span>
-                <span className="ms-auto flex gap-5 tabular-nums">
+                <span className="ms-auto flex flex-wrap gap-x-5 gap-y-1 tabular-nums">
                   <span className="text-muted">
                     {t.receive.counted}{" "}
                     <strong className="text-foreground">{r.received}</strong>
@@ -103,7 +104,7 @@ export default async function ReceivePage() {
         creditNotesAvailable={creditNotesAvailable}
       />
 
-      <p className="mt-6 flex items-center gap-2 text-xs text-faint">
+      <p className="mt-6 flex items-start gap-2 text-xs text-faint">
         <SimulatedTag>{t.receive.legendTag}</SimulatedTag>
         {t.receive.legend}
       </p>

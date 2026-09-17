@@ -4,7 +4,8 @@ import { resetDemo, simulateEvent } from "@/app/actions";
 
 import { useT } from "./locale-provider";
 import { SubmitButton } from "./submit-button";
-import { btn, SimulatedTag } from "./ui";
+import { btn } from "./button-styles";
+import { SimulatedTag } from "./ui";
 
 /**
  * Demo controls. Everything here is explicitly a simulation - the exercise
@@ -22,14 +23,14 @@ export function DemoBar({
 }) {
   const t = useT();
   return (
-    <section className="mt-12 rounded-xl border border-dashed border-sim/40 bg-sim-soft/40 p-4">
+    <section className="mt-12 border border-dashed border-sim/40 bg-sim-soft/40 p-4">
       <div className="mb-1 flex items-center gap-2">
         <SimulatedTag>{t.demo.heading}</SimulatedTag>
       </div>
       <p className="mb-4 text-xs text-muted">{t.demo.intro}</p>
 
       {!creditNotesAvailable && (
-        <p className="mb-3 rounded-lg border border-line bg-surface px-3 py-2 text-xs text-muted">
+        <p className="mb-3 border border-line bg-surface px-3 py-2 text-xs text-muted">
           {t.demo.creditUnavailableBefore}{" "}
           <code className="font-mono">supabase/migrations/001_credit_notes.sql</code>{" "}
           {t.demo.creditUnavailableAfter}

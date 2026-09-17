@@ -3,8 +3,8 @@ import Link from "next/link";
 import { raiseProposals } from "@/app/actions";
 import { DecisionForm } from "@/components/decision-form";
 import { DemoBar } from "@/components/demo-bar";
+import { btn } from "@/components/button-styles";
 import {
-  btn,
   Card,
   CausePill,
   ConfidenceNote,
@@ -22,11 +22,18 @@ import type { Cause, Proposal } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
+/*
+ * Pending is the client's indigo, not amber. Amber means "a number that needs a
+ * decision" and coral means "simulated", and a pending proposal sits with the
+ * simulated tag right beside it - two warm pills a reader has to tell apart at
+ * 11px. Indigo says "this one is yours to act on" and cannot be confused with
+ * either. Corrected keeps amber: a human overrode the proposal there.
+ */
 const STATUS_CLASS = {
-  approved: "text-ok bg-ok-soft",
-  corrected: "text-accent bg-accent-soft",
-  rejected: "text-muted bg-foreground/[0.06]",
-  pending: "text-accent bg-accent-soft",
+  approved: "border-ok/30 text-ok bg-ok-soft",
+  corrected: "border-accent/30 text-accent bg-accent-soft",
+  rejected: "border-line text-muted bg-foreground/[0.04]",
+  pending: "border-brand/30 text-brand bg-brand-soft",
 } as const;
 
 /** Screen 3 - the reviewer decides. Nothing else in the app settles a difference. */
@@ -129,7 +136,7 @@ export default async function ReviewPage() {
                   <div className="px-5 py-4">
                     <div className="mb-2 flex flex-wrap items-center gap-2">
                       <span
-                        className={`rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${STATUS_CLASS.pending}`}
+                        className={`lc rounded-full border px-2 py-0.5 text-[11px] font-semibold ${STATUS_CLASS.pending}`}
                       >
                         {t.review.status.pending}
                       </span>
@@ -156,13 +163,13 @@ export default async function ReviewPage() {
                     </div>
 
                     {copy.settledBy && (
-                      <p className="mt-3 rounded-lg bg-background px-3 py-2 text-sm text-muted">
+                      <p className="mt-3 bg-background px-3 py-2 text-sm text-muted">
                         {copy.settledBy}
                       </p>
                     )}
 
-                    <div className="mt-3 rounded-lg border border-line px-3 py-2.5">
-                      <p className="text-[11px] font-semibold uppercase tracking-wide text-faint">
+                    <div className="mt-3 border border-line px-3 py-2.5">
+                      <p className="text-[11px] font-semibold text-faint">
                         {t.review.nextAction}
                       </p>
                       <p className="mt-1 text-sm">{copy.proposedAction}</p>
@@ -196,7 +203,7 @@ export default async function ReviewPage() {
                 <div key={p.id} className="px-5 py-4">
                   <div className="flex flex-wrap items-center gap-2">
                     <span
-                      className={`rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${
+                      className={`lc rounded-full border px-2 py-0.5 text-[11px] font-semibold ${
                         STATUS_CLASS[p.status]
                       }`}
                     >

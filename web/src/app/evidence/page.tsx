@@ -1,8 +1,8 @@
 import Link from "next/link";
 
 import { DemoBar } from "@/components/demo-bar";
+import { btn } from "@/components/button-styles";
 import {
-  btn,
   Card,
   EmptyState,
   Evidence,
@@ -63,7 +63,7 @@ export default async function EvidencePage() {
       </header>
 
       {/* Result first. */}
-      <section className="mb-8 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-5">
+      <section className="mb-8 grid grid-cols-2 gap-px overflow-hidden border border-line bg-line sm:grid-cols-5">
         <Figure label={t.evidence.ordered} value={rec.ordered} hint={order.id} />
         <Figure
           label={t.evidence.listed}
@@ -110,7 +110,7 @@ export default async function EvidencePage() {
         <SectionTitle>{t.evidence.chain}</SectionTitle>
         <Card className="overflow-x-auto">
           <table className="w-full text-start text-sm">
-            <thead className="border-b border-line text-[11px] uppercase tracking-wide text-faint">
+            <thead className="border-b border-line text-[11px] text-faint">
               <tr>
                 <th className="px-4 py-2.5 text-start font-medium">
                   {t.evidence.thRecord}

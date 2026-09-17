@@ -7,7 +7,8 @@ import type { DeliveryNote } from "@/lib/types";
 
 import { useT } from "./locale-provider";
 import { SubmitButton } from "./submit-button";
-import { btn, Card } from "./ui";
+import { btn } from "./button-styles";
+import { Card } from "./ui";
 
 /**
  * The answer to the case's starting question, as a screen.
@@ -62,8 +63,8 @@ export function ReceiptForm({ note }: { note: DeliveryNote }) {
             onChange={setDamaged}
             tone="warn"
           />
-          <div className="rounded-lg border border-line bg-background px-3 py-2.5">
-            <div className="text-[11px] font-medium uppercase tracking-wide text-faint">
+          <div className="border border-line bg-background px-3 py-2.5">
+            <div className="text-[11px] font-medium text-faint">
               {t.form.acceptedLabel}
             </div>
             <div className="qty-input mt-1 text-3xl font-semibold text-ok">
@@ -76,12 +77,12 @@ export function ReceiptForm({ note }: { note: DeliveryNote }) {
         </div>
 
         {short > 0 && (
-          <p className="mt-4 rounded-lg bg-accent-soft px-3 py-2 text-sm text-accent">
+          <p className="mt-4 bg-accent-soft px-3 py-2 text-sm text-accent">
             {t.form.shortWarning(short, note.id)}
           </p>
         )}
         {invalid && (
-          <p className="mt-4 rounded-lg bg-accent-soft px-3 py-2 text-sm text-accent">
+          <p className="mt-4 bg-accent-soft px-3 py-2 text-sm text-accent">
             {t.form.invalid}
           </p>
         )}
@@ -117,8 +118,8 @@ function QtyField({
   tone?: "warn";
 }) {
   return (
-    <label className="block rounded-lg border border-line bg-background px-3 py-2.5 focus-within:border-faint">
-      <span className="text-[11px] font-medium uppercase tracking-wide text-faint">
+    <label className="block border border-line bg-background px-3 py-2.5 focus-within:border-faint">
+      <span className="text-[11px] font-medium text-faint">
         {label}
       </span>
       <input

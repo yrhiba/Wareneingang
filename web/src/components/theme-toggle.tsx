@@ -57,7 +57,7 @@ export function ThemeToggle() {
       aria-pressed={dark}
       aria-label={dark ? t.chrome.toLight : t.chrome.toDark}
       title={dark ? t.chrome.toLight : t.chrome.toDark}
-      className="flex size-7 items-center justify-center rounded-lg border border-line text-xs text-muted transition hover:border-faint hover:text-foreground"
+      className="flex size-7 items-center justify-center rounded-full border border-line text-xs text-muted transition hover:border-brand/50 hover:text-brand"
     >
       <span aria-hidden>{dark ? "☀" : "☾"}</span>
     </button>

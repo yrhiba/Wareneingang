@@ -7,7 +7,7 @@ import type { Cause, Proposal } from "@/lib/types";
 
 import { useT } from "./locale-provider";
 import { SubmitButton } from "./submit-button";
-import { btn } from "./ui";
+import { btn } from "./button-styles";
 
 /**
  * The reviewer's decision. This is the only thing in the app that settles a
@@ -36,12 +36,15 @@ export function DecisionForm({
           id={`rev-${proposal.id}`}
           name="reviewer"
           defaultValue={t.decide.reviewerDefault}
-          className="rounded-md border border-line bg-background px-2 py-1 text-xs"
+          /* Explicit width: the browser default is 20 characters, and the
+             longest default reviewer title - "Leitung Warenannahme" - is
+             exactly 20, so it clipped in a face as wide as Montserrat. */
+          className="w-56 border border-line bg-background px-2 py-1 text-xs"
         />
       </div>
 
       {correcting && (
-        <div className="mb-4 rounded-lg border border-line bg-background p-3">
+        <div className="mb-4 border border-line bg-background p-3">
           <p className="mb-2 text-xs font-medium text-muted">
             {t.decide.correctLead(t.cause[proposal.cause])}
           </p>
@@ -66,7 +69,7 @@ export function DecisionForm({
             name="note"
             rows={2}
             placeholder={t.decide.notePlaceholder}
-            className="mt-3 w-full rounded-md border border-line bg-surface px-2 py-1.5 text-sm outline-none focus:border-faint"
+            className="mt-3 w-full border border-line bg-surface px-2 py-1.5 text-sm outline-none focus:border-faint"
           />
         </div>
       )}

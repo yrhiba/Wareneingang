@@ -20,7 +20,7 @@ export function LanguageToggle() {
   return (
     <form
       action={setLanguage}
-      className="flex items-center rounded-lg border border-line p-0.5"
+      className="flex items-center rounded-full border border-line p-0.5"
       aria-label={t.chrome.language}
     >
       {LOCALES.map((l) => (
@@ -32,10 +32,10 @@ export function LanguageToggle() {
           lang={l}
           aria-current={l === active ? "true" : undefined}
           title={getDict(l).name}
-          className={`rounded-md px-2 py-0.5 text-xs transition ${
+          className={`rounded-full px-2.5 py-0.5 text-xs transition ${
             l === active
-              ? "bg-foreground font-semibold text-background"
-              : "text-muted hover:text-foreground"
+              ? "bg-brand font-semibold text-brand-ink"
+              : "text-muted hover:text-brand"
           }`}
         >
           {getDict(l).short}

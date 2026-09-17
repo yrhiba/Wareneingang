@@ -7,7 +7,8 @@ import { MAX_PART, MAX_QTY, type CaseConfig, type NoteConfig } from "@/lib/case-
 
 import { useT } from "./locale-provider";
 import { SubmitButton } from "./submit-button";
-import { btn, Card, Figure, SectionTitle } from "./ui";
+import { btn } from "./button-styles";
+import { Card, Figure, SectionTitle } from "./ui";
 
 /**
  * The case parameters, as a form.
@@ -49,8 +50,8 @@ export function SettingsForm({
         <section className="mb-6">
           <SectionTitle>{t.settings.orderHeading}</SectionTitle>
           <Card className="grid gap-4 p-5 sm:grid-cols-2">
-            <label className="block rounded-lg border border-line bg-background px-3 py-2.5 focus-within:border-faint">
-              <span className="flex items-baseline gap-2 text-[11px] font-medium uppercase tracking-wide text-faint">
+            <label className="block border border-line bg-background px-3 py-2.5 focus-within:border-faint">
+              <span className="flex items-baseline gap-2 text-[11px] font-medium text-faint">
                 {t.settings.part}
                 <Was show={part !== supplied.part} value={supplied.part} />
               </span>
@@ -127,8 +128,8 @@ export function SettingsForm({
                       supplied={was?.damaged}
                       tone="warn"
                     />
-                    <div className="rounded-lg border border-line bg-background px-3 py-2.5">
-                      <div className="text-[11px] font-medium uppercase tracking-wide text-faint">
+                    <div className="border border-line bg-background px-3 py-2.5">
+                      <div className="text-[11px] font-medium text-faint">
                         {t.settings.acceptedLabel}
                       </div>
                       <div className="qty-input mt-1 text-2xl font-semibold text-ok">
@@ -147,7 +148,7 @@ export function SettingsForm({
 
         <section className="mb-6">
           <SectionTitle>{t.settings.previewHeading}</SectionTitle>
-          <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-5">
+          <div className="grid grid-cols-2 gap-px overflow-hidden border border-line bg-line sm:grid-cols-5">
             <Figure label={t.settings.previewOrdered} value={ordered} />
             <Figure label={t.settings.previewListed} value={listed} />
             <Figure label={t.settings.previewCounted} value={counted} />
@@ -163,7 +164,7 @@ export function SettingsForm({
             />
           </div>
           <p
-            className={`mt-3 rounded-lg px-3 py-2 text-sm ${
+            className={`mt-3 px-3 py-2 text-sm ${
               gap === 0 ? "bg-ok-soft text-ok" : "bg-accent-soft text-accent"
             }`}
           >
@@ -173,7 +174,7 @@ export function SettingsForm({
         </section>
 
         {broken && (
-          <p className="mb-4 rounded-lg bg-accent-soft px-3 py-2 text-sm text-accent">
+          <p className="mb-4 bg-accent-soft px-3 py-2 text-sm text-accent">
             {t.settings.invalid(broken.id)}
           </p>
         )}
@@ -243,8 +244,8 @@ function Qty({
   tone?: "warn";
 }) {
   return (
-    <label className="block rounded-lg border border-line bg-background px-3 py-2.5 focus-within:border-faint">
-      <span className="flex items-baseline gap-2 text-[11px] font-medium uppercase tracking-wide text-faint">
+    <label className="block border border-line bg-background px-3 py-2.5 focus-within:border-faint">
+      <span className="flex items-baseline gap-2 text-[11px] font-medium text-faint">
         {label}
         <Was show={supplied !== undefined && supplied !== value} value={supplied ?? 0} />
       </span>

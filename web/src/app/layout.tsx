@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, IBM_Plex_Sans_Arabic } from "next/font/google";
+import { Geist_Mono, IBM_Plex_Sans_Arabic, Montserrat } from "next/font/google";
 
 import { LocaleProvider } from "@/components/locale-provider";
 import { Nav } from "@/components/nav";
@@ -10,11 +10,19 @@ import { getLocale } from "@/lib/i18n/server";
 
 import "./globals.css";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
+// The assigned client's face. trast.de sets Montserrat for both its headlines
+// and its body text, so matching it is the single most visible thing this
+// prototype can do about client fit. Variable, so no weight list is needed, and
+// the latin subset carries the German diacritics.
+const brand = Montserrat({ variable: "--font-brand", subsets: ["latin"] });
+
+// Record ids stay mono: they are identifiers, and the client has no data tables
+// to take a cue from.
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
-// Geist has no Arabic glyphs, so Arabic would fall back to whatever the machine
-// happens to have. Plex Arabic is loaded for the same reason the Latin face is.
+// Montserrat has no Arabic glyphs, so Arabic would fall back to whatever the
+// machine happens to have. Plex Arabic is loaded for the same reason the Latin
+// face is - and the client has no Arabic to copy, so this one is our choice.
 const arabic = IBM_Plex_Sans_Arabic({
   variable: "--font-arabic",
   subsets: ["arabic"],
@@ -37,7 +45,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang={locale}
       dir={t.dir}
-      className={`${geistSans.variable} ${geistMono.variable} ${arabic.variable} h-full antialiased`}
+      className={`${brand.variable} ${geistMono.variable} ${arabic.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
@@ -55,9 +63,11 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         />
       </head>
       <body className="flex min-h-full flex-col">
+        {/* The client's gradient, behind everything. Decorative only. */}
+        <div className="brand-field" aria-hidden />
         <LocaleProvider locale={locale}>
           {/* Never off-screen: the exercise requires synthetic data to be labelled. */}
-          <p className="bg-foreground px-4 py-1.5 text-center text-[11px] font-medium uppercase tracking-[0.08em] text-background">
+          <p className="lc bg-foreground px-4 py-1.5 text-center text-[11px] font-semibold tracking-[0.01em] text-background">
             {t.chrome.banner}
             {modified && (
               <span className="ms-2 rounded-full bg-background/25 px-2 py-0.5">

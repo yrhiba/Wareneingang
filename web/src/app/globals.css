@@ -1,18 +1,38 @@
 @import "tailwindcss";
 
+/*
+ * The palette is the assigned client's, not an approximation of it. Every value
+ * below marked "trast" was read off trast.de itself - the indigo, the navy and
+ * the greys are the site's own CSS custom properties, and the blue, the coral
+ * and the page grey were sampled out of the screenshots in ref/. The indigo
+ * agreed to the byte across both, which is why it is trusted as the brand.
+ *
+ * One collision had to be resolved: indigo was this prototype's "simulated"
+ * colour and is also the client's brand colour. The brand won, and simulated
+ * moved to the client's coral - still their palette, as far from indigo as it
+ * gets. See CLAUDE.md; the convention is written down in nine strings.
+ */
 :root {
-  --background: #fbfbfa;
+  --background: #e5e5e8;  /* trast - the grey field their blocks float on */
   --surface: #ffffff;
-  --foreground: #16181d;
-  --muted: #5f6672;
-  --faint: #8b929e;
-  --line: #e3e5e9;
+  --foreground: #0e0e2e;  /* trast - primary-variant, their body colour */
+  --muted: #4e4e6a;
+  --faint: #64647f;
+  --line: #d2d2dc;
+  --brand: #4520d1;       /* trast - primary. The hero block and every pill */
+  --brand-soft: #ebe8fb;
+  --brand-ink: #ffffff;   /* what reads on --brand; it flips in dark */
   --accent: #b45309;      /* amber-700  - a number that needs a decision */
-  --accent-soft: #fef6ec;
+  --accent-soft: #fdf3e7;
   --ok: #047857;          /* emerald-700 - settled */
-  --ok-soft: #ecfdf5;
-  --sim: #6d28d9;         /* violet-700  - simulated, never real */
-  --sim-soft: #f5f1fe;
+  --ok-soft: #e9f7f1;
+  /* Coral carries "simulated" now. Two values, because the client's own coral
+     is a gradient plateau and only reaches 2.5:1 on white - fine as a fill or a
+     border, unreadable as text. --sim is it darkened to 5.5:1; --sim-hero is
+     the real one, used wherever it is not carrying words. */
+  --sim: #c2352a;
+  --sim-hero: #ff8072;    /* trast - sampled from the gradient */
+  --sim-soft: #ffeeeb;
   color-scheme: light;
 }
 
@@ -21,20 +41,27 @@
  * A projector in a bright room is the environment this has to survive, and a
  * laptop set to dark should not decide that for the room. Dark is opt-in via
  * the toggle, which sets data-theme="dark" on <html>.
+ *
+ * The dark background is trast's own #0e0e2e rather than a neutral charcoal,
+ * so the dark theme is on-brand instead of merely inverted.
  */
 :root[data-theme="dark"] {
-  --background: #0d0f13;
-  --surface: #14171d;
-  --foreground: #e9ebef;
-  --muted: #99a1af;
-  --faint: #6b7280;
-  --line: #262b34;
+  --background: #0e0e2e;
+  --surface: #17173d;
+  --foreground: #eceaf8;
+  --muted: #a6a4c4;
+  --faint: #8280a4;
+  --line: #2a2a55;
+  --brand: #a48cff;       /* indigo lifted until it reads on the navy */
+  --brand-soft: #241f4d;
+  --brand-ink: #14143a;
   --accent: #f5a524;
-  --accent-soft: #241c0d;
+  --accent-soft: #2a1f0c;
   --ok: #34d399;
-  --ok-soft: #0c1f1a;
-  --sim: #c4b5fd;
-  --sim-soft: #1a152b;
+  --ok-soft: #0c2018;
+  --sim: #ff9a8e;
+  --sim-hero: #ff8072;
+  --sim-soft: #351d1c;
   color-scheme: dark;
 }
 
@@ -49,22 +76,35 @@
   --color-muted: var(--muted);
   --color-faint: var(--faint);
   --color-line: var(--line);
+  --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-ink: var(--brand-ink);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
   --color-ok: var(--ok);
   --color-ok-soft: var(--ok-soft);
   --color-sim: var(--sim);
+  --color-sim-hero: var(--sim-hero);
   --color-sim-soft: var(--sim-soft);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-brand);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  /* Geist, not the scaffold's Arial fallback. */
-  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  /* Montserrat, because it is the face trast.de sets for both its headlines and
+     its body text. Record ids keep the mono face - they are identifiers, and the
+     client has no data tables to take a cue from. */
+  font-family: var(--font-brand), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+/* One indigo focus ring for every control, rather than a ring class per
+   component. Keyboard users get the brand colour too. */
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
 }
 
 /* Receiving-bay input: big enough to hit quickly, tabular so digits line up. */
@@ -73,18 +113,93 @@ body {
 }
 
 /* --------------------------------------------------------------------------
+   The client's voice: lowercase chrome
+   -------------------------------------------------------------------------- */
+
+/*
+ * trast writes its headings, its nav and its buttons in lowercase - even
+ * "trast digital gmbh" in its own footer. It is the loudest single thing about
+ * how they look.
+ *
+ * It is done here and not in the dictionaries on purpose: de.ts keeps correct
+ * German capitalisation, so a reviewer reading the source sees "Wareneingang",
+ * the e2e suites keep matching the raw HTML, and reverting is one rule.
+ *
+ * Body prose is deliberately left alone. trast lowercases theirs too, but this
+ * is a screen somebody scans on a loading bay under time pressure, and
+ * lowercased German nouns in running text slow that down.
+ */
+h1,
+h2,
+.lc {
+  text-transform: lowercase;
+}
+
+h1,
+h2 {
+  letter-spacing: -0.01em;
+}
+
+/* Identifiers are not prose: PO-1 never becomes po-1, in a heading or anywhere
+   else. text-transform is inherited, so an explicit none here wins. */
+[class~="font-mono"] {
+  text-transform: none;
+}
+
+/* --------------------------------------------------------------------------
+   The client's backdrop
+   -------------------------------------------------------------------------- */
+
+/*
+ * trast's "emotion ball" - a large soft field of coral, indigo and blue bleeding
+ * off the top-right corner of a grey page. Rebuilt from three radial gradients
+ * rather than lifting their image: it costs nothing, it scales to any viewport,
+ * and it follows the theme.
+ *
+ * Fixed and behind everything. Every card above it is opaque, which is what
+ * keeps a dense figures screen readable on a projector in a bright room; the
+ * sticky header is not, so it picks up the colour exactly as theirs does.
+ */
+.brand-field {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  /* Layer order is paint order: the indigo core sits on top of the coral halo,
+     which is how their ball reads - hot edge, deep centre. */
+  background:
+    radial-gradient(26vw 26vw at 86% 4%, rgba(69, 32, 209, 0.5), transparent 68%),
+    radial-gradient(20vw 20vw at 70% 20%, rgba(26, 121, 250, 0.34), transparent 66%),
+    radial-gradient(44vw 44vw at 88% 0%, rgba(255, 128, 114, 0.5), transparent 70%);
+}
+
+/* On the navy the same field would glow rather than tint, so it is halved. */
+:root[data-theme="dark"] .brand-field {
+  background:
+    radial-gradient(26vw 26vw at 86% 4%, rgba(124, 92, 255, 0.3), transparent 68%),
+    radial-gradient(20vw 20vw at 70% 20%, rgba(26, 121, 250, 0.2), transparent 66%),
+    radial-gradient(44vw 44vw at 88% 0%, rgba(255, 128, 114, 0.2), transparent 70%);
+}
+
+/* The gradient sits in the corner the text starts from when the page is RTL,
+   so it moves to the other side rather than sitting under the headings. */
+:root[dir="rtl"] .brand-field {
+  transform: scaleX(-1);
+}
+
+/* --------------------------------------------------------------------------
    Arabic / right-to-left
    -------------------------------------------------------------------------- */
 
 :root[dir="rtl"] body {
-  font-family: var(--font-arabic), var(--font-geist-sans), ui-sans-serif,
-    system-ui, sans-serif;
+  font-family: var(--font-arabic), var(--font-brand), ui-sans-serif, system-ui,
+    sans-serif;
 }
 
 /*
  * Arabic is cursive: letters join, and letter-spacing pulls them apart into
  * something close to unreadable. Several labels here are tracked for the Latin
- * uppercase look, so the whole subtree is reset rather than each utility.
+ * look, so the whole subtree is reset rather than each utility.
  * Specificity (0,2,1) beats a Tailwind tracking-* class on its own.
  */
 :root[dir="rtl"] body,

@@ -85,7 +85,7 @@ export const de: Dict = {
     toReview: "Abweichung prüfen →",
     legendTag: "So liest du das",
     legend:
-      "Violett markiert alles Eingespielte oder Simulierte. Nichts in diesem Prototyp kontaktiert einen Lieferanten oder bucht auf den Bestand.",
+      "Korallrot markiert alles Eingespielte oder Simulierte. Nichts in diesem Prototyp kontaktiert einen Lieferanten oder bucht auf den Bestand.",
   },
 
   form: {
@@ -310,7 +310,7 @@ export const de: Dict = {
       "*Zurücksetzen — Schichtbeginn.* Zwei Lieferscheine liegen an der Rampe. Nichts gezählt, keine Rechnung. Schritt 3 zeigt _nichts zu prüfen_ — das ist der leere Zustand, und er ist ehrlich.",
       "*DN-1 einzählen.* 8 gezählt, 1 beschädigt. „Angenommen“ zeigt `7` und lässt sich nicht überschreiben — es ist abgeleitet, und die Datenbank verweigert einen Wareneingang, bei dem die drei Zahlen nicht aufgehen. _Das ist die Antwort auf die Ausgangsfrage._",
       "*DN-2 einzählen.* 2 und 0. Du landest automatisch bei den Belegen: 10 bestellt, 10 ausgewiesen, 10 gezählt, 9 angenommen. Noch stimmt alles — die Ware passt zu den Lieferscheinen.",
-      "*Drücke „Lieferantenrechnung trifft ein“* (violett — eine Simulation). Die Rechnung berechnet 10. Zwei Vorschläge werden erstellt und du landest in der Prüfung. Ein Klick, keine Rückfrage.",
+      "*Drücke „Lieferantenrechnung trifft ein“* (korallrot — eine Simulation). Die Rechnung berechnet 10. Zwei Vorschläge werden erstellt und du landest in der Prüfung. Ein Klick, keine Rückfrage.",
       "*Lies den ersten Vorschlag laut vor.* Wahrscheinlichste Ursache _Beschädigung_, markiert als _wahrscheinlich_, während Fehlmenge, Doppelerfassung und Zweite Lieferung offen bleiben. Belege: `INV-1 · DN-1 · DN-2 · RC-1`. Vorgeschlagene Maßnahme: eine Gutschrift anfordern. Und dann der wichtige Satz: _es schlägt vor, es entscheidet nicht._",
       "*Bestätige ihn* — oder drücke _Korrigieren_, wähle eine andere Ursache und tippe eine Begründung. So oder so werden die Entscheidung, die prüfende Person und die endgültige Ursache erfasst, und der Verlauf zeigt, welche es war. Drücke danach „Lieferant stellt eine Gutschrift aus“ und sieh zu, wie sich die Lücke zu „ausgeglichen“ schließt. Der zweite Vorschlag ist die Frage nach der Doppelerfassung — zwei Lieferscheine zu einer Bestellung — und er ist da, um zu zeigen: das System fragt, statt anzunehmen.",
     ],
@@ -441,7 +441,7 @@ export const de: Dict = {
       events: {
         c: "Auslösendes Ereignis",
         s: "Simuliert, gekennzeichnet",
-        l: "Zwei Schaltflächen spielen die Rechnung und die Gutschrift ein. Überall violett markiert und mit „Simuliert“ getaggt.",
+        l: "Zwei Schaltflächen spielen die Rechnung und die Gutschrift ein. Überall korallrot markiert und mit „Simuliert“ getaggt.",
       },
       scans: {
         c: "Gescannte Dokumente",

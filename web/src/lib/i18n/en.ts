@@ -84,7 +84,7 @@ export const en = {
     toReview: "Review the difference →",
     legendTag: "How to read this",
     legend:
-      "Purple marks anything injected or simulated. Nothing in this prototype contacts a supplier or posts to stock.",
+      "Coral marks anything injected or simulated. Nothing in this prototype contacts a supplier or posts to stock.",
   },
 
   form: {
@@ -308,7 +308,7 @@ export const en = {
       "*Reset — start of shift.* Two delivery notes are at the bay. Nothing counted in, no invoice. Screen 3 shows _nothing to review_ — that is the empty state, and it is honest.",
       "*Count in DN-1.* Counted in 8, damaged 1. Accepted shows `7` and cannot be typed over — it is derived, and the database refuses a receipt where the three do not balance. _This is the answer to the challenge question._",
       "*Count in DN-2.* 2 and 0. You land on the evidence screen automatically: 10 ordered, 10 listed, 10 counted, 9 accepted. Nothing is wrong yet — the goods reconcile against the notes.",
-      "*Press “Supplier invoice arrives”* (purple — a simulation). The invoice bills 10. Two proposals are raised and you are taken to review. One click, no second prompt.",
+      "*Press “Supplier invoice arrives”* (coral — a simulation). The invoice bills 10. Two proposals are raised and you are taken to review. One click, no second prompt.",
       "*Read the first proposal aloud.* Leading cause _Damage_, marked _likely_, with Shortage, Duplicate scan and Second delivery still listed as open. Evidence: `INV-1 · DN-1 · DN-2 · RC-1`. Proposed action: request a credit note. Then say the important line: _it proposes, it does not decide._",
       "*Approve it* — or press _Correct it_, pick a different cause and type a reason. Either way the decision, the reviewer and the final cause are recorded, and the history shows which. Then press “Supplier issues a credit note” to watch the gap close to reconciled. The second proposal is the duplicate-scan question — two notes against one order — and it is there to show the system asks rather than assumes.",
     ],
@@ -439,7 +439,7 @@ export const en = {
       events: {
         c: "Event trigger",
         s: "Simulated, labelled",
-        l: "Two buttons inject the invoice and the credit note. Marked purple and tagged Simulated wherever they appear.",
+        l: "Two buttons inject the invoice and the credit note. Marked coral and tagged Simulated wherever they appear.",
       },
       scans: {
         c: "Scanned documents",
