@@ -1,12 +1,15 @@
 # Run against a live dev server: npm run dev, then npm run e2e.
 # These drive the real app and the real database - they leave the demo
 # reset to "start of shift" when they finish.
+#
+# Point them at a deployment to verify one: C04_BASE=https://... npm run e2e.
+# Same database either way, so run it when nobody is mid-demo.
 """Drives the real app over HTTP the way a browser with JS disabled would:
 Next renders each server action's id as a hidden $ACTION_ID_* field, so posting
 the form executes the action for real. No mocking anywhere."""
-import html, re, sys, urllib.request, urllib.error, uuid
+import html, os, re, sys, urllib.request, urllib.error, uuid
 
-BASE = "http://localhost:3000"
+BASE = os.environ.get("C04_BASE", "http://localhost:3000").rstrip("/")
 FAIL = []
 
 def get(path):

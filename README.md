@@ -5,6 +5,10 @@ A prototype for the DaiL / Octopus day exercise, case **C04**.
 > **Starting question:** what should the employee record at receipt so the next
 > person can resolve the difference?
 
+**Live:** https://dail-c04.vercel.app — open to anyone with the link, no
+account needed. The three screens are `/`, `/evidence` and `/review`; the
+presenter briefing is at `/docs`.
+
 **All data here is synthetic exercise data.** It is not a real client, supplier,
 country or participant. Nothing external is executed: no supplier message, no
 inventory update, no accounting entry.
@@ -73,6 +77,11 @@ does the same thing.
 
 `npm run check:seed` asserts that what the app reseeds still matches
 `initial.json` field for field, so the supplied records cannot drift.
+
+**Verifying a deployment:** `C04_BASE=https://dail-c04.vercel.app npm run e2e`
+points both suites at the deployed app instead of localhost. It drives the same
+database, so run it when nobody is mid-demo; it leaves the state at start of
+shift.
 
 **Database setup:** a fresh Supabase project needs `supabase/schema.sql`. A
 database created before the credit-note work needs the additive
