@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { ThemeToggle } from "./theme-toggle";
+
 const STEPS = [
   { href: "/", n: "1", label: "Goods receipt", sub: "At the bay" },
   { href: "/evidence", n: "2", label: "Evidence", sub: "Notes, receipts, invoice" },
@@ -48,12 +50,15 @@ export function Nav() {
           })}
         </nav>
 
-        <Link
-          href="/docs"
-          className="ml-auto text-xs text-faint underline-offset-4 hover:underline"
-        >
-          Briefing
-        </Link>
+        <div className="ml-auto flex items-center gap-3">
+          <Link
+            href="/docs"
+            className="text-xs text-faint underline-offset-4 hover:underline"
+          >
+            Briefing
+          </Link>
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   );

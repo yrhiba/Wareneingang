@@ -13,24 +13,34 @@
   --ok-soft: #ecfdf5;
   --sim: #6d28d9;         /* violet-700  - simulated, never real */
   --sim-soft: #f5f1fe;
+  color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0d0f13;
-    --surface: #14171d;
-    --foreground: #e9ebef;
-    --muted: #99a1af;
-    --faint: #6b7280;
-    --line: #262b34;
-    --accent: #f5a524;
-    --accent-soft: #241c0d;
-    --ok: #34d399;
-    --ok-soft: #0c1f1a;
-    --sim: #c4b5fd;
-    --sim-soft: #1a152b;
-  }
+/*
+ * Light is the default, deliberately: the OS preference is not consulted.
+ * A projector in a bright room is the environment this has to survive, and a
+ * laptop set to dark should not decide that for the room. Dark is opt-in via
+ * the toggle, which sets data-theme="dark" on <html>.
+ */
+:root[data-theme="dark"] {
+  --background: #0d0f13;
+  --surface: #14171d;
+  --foreground: #e9ebef;
+  --muted: #99a1af;
+  --faint: #6b7280;
+  --line: #262b34;
+  --accent: #f5a524;
+  --accent-soft: #241c0d;
+  --ok: #34d399;
+  --ok-soft: #0c1f1a;
+  --sim: #c4b5fd;
+  --sim-soft: #1a152b;
+  color-scheme: dark;
 }
+
+/* Point Tailwind's dark: variant at the same attribute, so utility classes
+   written as dark:* follow the toggle instead of the OS. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 @theme inline {
   --color-background: var(--background);
