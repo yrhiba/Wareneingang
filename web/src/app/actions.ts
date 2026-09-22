@@ -24,10 +24,12 @@ import type { Cause } from "@/lib/types";
 /**
  * Every write in this app lands here.
  *
- * The browser key cannot write - row-level security refuses it (42501). So a
- * state change can only happen through a server action, which is how "no stock
- * or accounting write without review" is enforced by the database rather than
- * by convention.
+ * Reads and writes both run server-side; no Supabase key reaches the browser.
+ * The client that holds the secret key is `server-only`, so it cannot be
+ * bundled into a browser chunk, and RLS grants select only as the backstop -
+ * a write from a browser key would be refused with 42501. That is how "no
+ * stock or accounting write without review" is enforced structurally rather
+ * than by convention.
  *
  * Nothing here contacts the outside world. No supplier message, no inventory
  * update, no accounting entry is executed; an approved action is recorded as a

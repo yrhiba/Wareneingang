@@ -1,8 +1,12 @@
 # web — the C04 prototype
 
 The Next.js app. **The deliverable README is one level up, at
-[`../README.md`](../README.md)**: result first, run instructions, what is real
-versus simulated, limitations and the next validation test.
+[`../README.md`](../README.md)**: result first, the live link, run instructions,
+what is real versus simulated, limitations and the next validation test. The
+full documentation set is in [`../docs/`](../docs) — what was built, how it
+works, the real/simulated split, the Wolf handoff and the demo script.
+
+Live: <https://dail-c04.vercel.app>
 
 ```bash
 npm install                    # first time only
@@ -19,7 +23,7 @@ npm run dev                    # http://localhost:3000
 | `npm run check:seed` | Asserts `src/lib/seed-data.ts` still matches `initial.json` field for field |
 | `npm run e2e` | Two suites over real HTTP against a running dev server and the live database |
 
-`.env.local` holds the Supabase URL, publishable key and secret key, and is
+`.env.local` holds the Supabase URL and the secret key, and is
 gitignored. The secret key must never take a `NEXT_PUBLIC_` prefix.
 
 Deployed on Vercel with **Root Directory `web`** and those same three variables.

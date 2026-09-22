@@ -341,7 +341,7 @@ export const de: Dict = {
     runHeading: "Starten",
     runSteps: [
       "`cd web && npm install` — einmalig, falls `node_modules` fehlt.",
-      "`web/.env.local` muss die Supabase-URL, den Publishable Key und den Secret Key enthalten. Die Datei ist gitignored, also nach einem frischen Klon — und nur dann — `web/.env.example` kopieren und ausfüllen. *Wenn die Datei schon existiert, lass sie in Ruhe:* das Beispiel darüberzukopieren ersetzt die Schlüssel durch Platzhalter, und jeder Bildschirm läuft in einen 500er.",
+      "`web/.env.local` muss die Supabase-URL und den Secret Key enthalten. Die Datei ist gitignored, also nach einem frischen Klon — und nur dann — `web/.env.example` kopieren und ausfüllen. *Wenn die Datei schon existiert, lass sie in Ruhe:* das Beispiel darüberzukopieren ersetzt die Schlüssel durch Platzhalter, und jeder Bildschirm läuft in einen 500er.",
       "`npm run dev` ausführen, dann `http://localhost:3000` öffnen.",
     ],
     resetLabel: "Auf einen bekannten Startzustand zurücksetzen",
@@ -401,7 +401,7 @@ export const de: Dict = {
       },
       rls: {
         name: "Keine Buchung ohne Prüfung — erzwungen",
-        body: "Der Browser-Schlüssel darf lesen und sonst nichts; ein Schreibversuch scheitert mit Postgres `42501`. Jede Zustandsänderung läuft über eine Server Action.",
+        body: "Jeder Lese- und Schreibzugriff läuft serverseitig — kein Supabase-Schlüssel gelangt überhaupt in den Browser. Row Level Security erlaubt nur Lesen als Rückfallebene, ein Schreibversuch mit einem Browser-Schlüssel scheitert also mit Postgres `42501`.",
       },
       external: {
         name: "Alles, was das Haus verlässt",
@@ -456,7 +456,7 @@ export const de: Dict = {
       review: {
         c: "Menschliche Prüfung",
         s: "Echt",
-        l: "Bestätigen / Korrigieren / Verwerfen schreibt eine review_decisions-Zeile. RLS verbietet dem Browser-Schlüssel jedes Schreiben.",
+        l: "Bestätigen / Korrigieren / Verwerfen schreibt eine review_decisions-Zeile. Kein Schlüssel gelangt in den Browser, RLS erlaubt nur Lesen als Rückfallebene.",
       },
       events: {
         c: "Auslösendes Ereignis",

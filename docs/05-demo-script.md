@@ -1,4 +1,12 @@
-# C04 — the talk
+# 05 — Demo script
+
+[← README](../README.md) · [← Wolf handoff](04-wolf-handoff.md) · **Live: <https://dail-c04.vercel.app>**
+
+The talk, as delivered. Roughly five minutes. The presenter briefing inside the
+app — [`/docs`](https://dail-c04.vercel.app/docs) — has the beat-by-beat version
+with the exact buttons to press, and stays open even if the database is down.
+
+---
 
 ## My client, the problem, and why I picked it
 

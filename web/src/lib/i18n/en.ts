@@ -342,7 +342,7 @@ export const en = {
     runHeading: "Run it",
     runSteps: [
       "`cd web && npm install` — once, if `node_modules` is missing.",
-      "`web/.env.local` must hold the Supabase URL, publishable key and secret key. It is gitignored, so after a fresh clone — and only then — copy `web/.env.example` over and fill it in. *If the file already exists, leave it alone:* copying the example over a filled-in file replaces the keys with placeholders and every screen 500s.",
+      "`web/.env.local` must hold the Supabase URL and the secret key. It is gitignored, so after a fresh clone — and only then — copy `web/.env.example` over and fill it in. *If the file already exists, leave it alone:* copying the example over a filled-in file replaces the keys with placeholders and every screen 500s.",
       "Run `npm run dev`, then open `http://localhost:3000`.",
     ],
     resetLabel: "Reset to a known start state",
@@ -402,7 +402,7 @@ export const en = {
       },
       rls: {
         name: "No write without review, enforced",
-        body: "The browser key can read and nothing else; a write from it fails with Postgres `42501`. Every state change goes through a server action.",
+        body: "Every read and write runs server-side — no Supabase key reaches the browser at all. Row-level security grants select only as the backstop, so even a write from a browser key fails with Postgres `42501`.",
       },
       external: {
         name: "Anything leaving the building",
@@ -457,7 +457,7 @@ export const en = {
       review: {
         c: "Human review",
         s: "Real",
-        l: "Approve / correct / reject writes a review_decisions row. RLS blocks the browser key from writing at all.",
+        l: "Approve / correct / reject writes a review_decisions row. No key reaches the browser, and RLS grants select only as the backstop.",
       },
       events: {
         c: "Event trigger",
